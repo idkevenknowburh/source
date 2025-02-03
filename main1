@@ -1,9 +1,9 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "King CatWeb Hub",
+   Name = "Superior's Hub",
    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "Fight In A School",
+   LoadingTitle = "OP Superior's Hub",
    LoadingSubtitle = "by Extronoma",
    Theme = "Amber", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
@@ -47,7 +47,7 @@ loadstring(game:HttpGet("https://rawscripts.net/raw/fight-in-a-school-yn-Hub-Scr
 local Button2 = MainTab:CreateButton({
    Name = "LOAD INFINITE YIELD / ADMIN CMDS",
    Callback = function()
-loadstring(game:HttpGet(('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'),true))()
+loadstring(game:HttpGet(('https://raw.githubusercontent.com/idkevenknowburh/source/refs/heads/main/main1'),true))()
    end,
 })
 

@@ -96,7 +96,7 @@ loadstring(game:HttpGet("https://rawscripts.net/raw/fight-in-a-school-yn-Hub-Scr
 local Button2 = MainTab:CreateButton({
    Name = "LOAD INFINITE YIELD / ADMIN CMDS",
    Callback = function()
-loadstring(game:HttpGet(('https://raw.githubusercontent.com/idkevenknowburh/source/refs/heads/main/main1'),true))()
+loadstring(game:HttpGet(('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'),true))()
    end,
 })
 

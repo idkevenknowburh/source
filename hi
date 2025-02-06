@@ -1,0 +1,309 @@
+-- Gui to Lua
+-- Version: 3.2
+
+-- Instances:
+
+local AutoFarm = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local AutoFarmButton = Instance.new("TextButton")
+local UICorner = Instance.new("UICorner")
+local PetGlitchButton = Instance.new("TextButton")
+local UICorner_2 = Instance.new("UICorner")
+local LoadSuperiorHub = Instance.new("TextButton")
+local UICorner_3 = Instance.new("UICorner")
+local Subtitle = Instance.new("TextLabel")
+local AutoFarmFrame = Instance.new("Frame")
+local AutoHoops = Instance.new("TextButton")
+local UICorner_4 = Instance.new("UICorner")
+local AutoGems = Instance.new("TextButton")
+local UICorner_5 = Instance.new("UICorner")
+local AutoRebirths = Instance.new("TextButton")
+local UICorner_6 = Instance.new("UICorner")
+local AutoOrbs = Instance.new("TextButton")
+local UICorner_7 = Instance.new("UICorner")
+local Credits = Instance.new("TextLabel")
+local PetsFrame = Instance.new("Frame")
+local petinfon = Instance.new("TextButton")
+local UICorner_8 = Instance.new("UICorner")
+local ImportantNotePetGlitch = Instance.new("TextLabel")
+
+--Properties:
+
+AutoFarm.Name = "AutoFarm"
+AutoFarm.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+AutoFarm.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+AutoFarm.ResetOnSpawn = false
+
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = AutoFarm
+MainFrame.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+MainFrame.BorderSizePixel = 0
+MainFrame.Position = UDim2.new(0.307524532, 0, 0.175619841, 0)
+MainFrame.Size = UDim2.new(0, 473, 0, 254)
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+Title.Name = "Title"
+Title.Parent = MainFrame
+Title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Title.BackgroundTransparency = 1.000
+Title.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Title.BorderSizePixel = 0
+Title.Position = UDim2.new(0.0570824519, 0, 0, 0)
+Title.Size = UDim2.new(0, 142, 0, 34)
+Title.Font = Enum.Font.Bodoni
+Title.Text = "Superior's Hub"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextScaled = true
+Title.TextSize = 14.000
+Title.TextStrokeColor3 = Color3.fromRGB(244, 244, 244)
+Title.TextStrokeTransparency = 5.000
+Title.TextWrapped = true
+
+AutoFarmButton.Name = "AutoFarmButton"
+AutoFarmButton.Parent = MainFrame
+AutoFarmButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+AutoFarmButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+AutoFarmButton.BorderSizePixel = 0
+AutoFarmButton.Position = UDim2.new(0.0190274846, 0, 0.188976377, 0)
+AutoFarmButton.Size = UDim2.new(0, 126, 0, 28)
+AutoFarmButton.Font = Enum.Font.SourceSans
+AutoFarmButton.Text = "Auto-Farm"
+AutoFarmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoFarmButton.TextSize = 20.000
+AutoFarmButton.TextWrapped = true
+AutoFarmButton.TextXAlignment = Enum.TextXAlignment.Left
+AutoFarmButton.MouseButton1Down:connect(function()
+	AutoFarmFrame.Visible = true
+	PetsFrame.Visible = false
+end)
+
+UICorner.Parent = AutoFarmButton
+
+PetGlitchButton.Name = "PetGlitchButton"
+PetGlitchButton.Parent = MainFrame
+PetGlitchButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+PetGlitchButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+PetGlitchButton.BorderSizePixel = 0
+PetGlitchButton.Position = UDim2.new(0.0190274846, 0, 0.330708653, 0)
+PetGlitchButton.Size = UDim2.new(0, 126, 0, 28)
+PetGlitchButton.Font = Enum.Font.SourceSans
+PetGlitchButton.Text = "(VERY OP) Glitch Pet Inf "
+PetGlitchButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+PetGlitchButton.TextScaled = true
+PetGlitchButton.TextSize = 20.000
+PetGlitchButton.TextWrapped = true
+PetGlitchButton.TextXAlignment = Enum.TextXAlignment.Left
+PetGlitchButton.MouseButton1Down:connect(function()
+	PetsFrame.Visible = true
+	AutoFarmFrame.Visible = false
+end)
+
+UICorner_2.Parent = PetGlitchButton
+
+LoadSuperiorHub.Name = "LoadSuperiorHub"
+LoadSuperiorHub.Parent = MainFrame
+LoadSuperiorHub.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+LoadSuperiorHub.BorderColor3 = Color3.fromRGB(0, 0, 0)
+LoadSuperiorHub.BorderSizePixel = 0
+LoadSuperiorHub.Position = UDim2.new(0.0190274846, 0, 0.48031497, 0)
+LoadSuperiorHub.Size = UDim2.new(0, 126, 0, 28)
+LoadSuperiorHub.Font = Enum.Font.SourceSans
+LoadSuperiorHub.Text = "Load Superior Hub"
+LoadSuperiorHub.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoadSuperiorHub.TextScaled = true
+LoadSuperiorHub.TextSize = 20.000
+LoadSuperiorHub.TextWrapped = true
+LoadSuperiorHub.TextXAlignment = Enum.TextXAlignment.Left
+LoadSuperiorHub.MouseButton1Down:connect(function()
+	loadstring(game:HttpGet(('https://raw.githubusercontent.com/idkevenknowburh/source/refs/heads/main/main1'),true))()
+end)
+
+UICorner_3.Parent = LoadSuperiorHub
+
+Subtitle.Name = "Subtitle"
+Subtitle.Parent = MainFrame
+Subtitle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Subtitle.BackgroundTransparency = 1.000
+Subtitle.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Subtitle.BorderSizePixel = 0
+Subtitle.Position = UDim2.new(0.0190274846, 0, 0.11023622, 0)
+Subtitle.Size = UDim2.new(0, 169, 0, 14)
+Subtitle.Font = Enum.Font.Fantasy
+Subtitle.Text = "Legends of Speed (VERY OP)"
+Subtitle.TextColor3 = Color3.fromRGB(156, 156, 156)
+Subtitle.TextScaled = true
+Subtitle.TextSize = 14.000
+Subtitle.TextStrokeColor3 = Color3.fromRGB(244, 244, 244)
+Subtitle.TextStrokeTransparency = 5.000
+Subtitle.TextWrapped = true
+
+AutoFarmFrame.Name = "AutoFarmFrame"
+AutoFarmFrame.Parent = MainFrame
+AutoFarmFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+AutoFarmFrame.BackgroundTransparency = 1.000
+AutoFarmFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+AutoFarmFrame.BorderSizePixel = 0
+AutoFarmFrame.Position = UDim2.new(0.338266373, 0, 0.188976377, 0)
+AutoFarmFrame.Size = UDim2.new(0, 297, 0, 180)
+
+AutoHoops.Name = "AutoHoops"
+AutoHoops.Parent = AutoFarmFrame
+AutoHoops.BackgroundColor3 = Color3.fromRGB(44, 44, 44)
+AutoHoops.BorderColor3 = Color3.fromRGB(0, 0, 0)
+AutoHoops.BorderSizePixel = 0
+AutoHoops.Position = UDim2.new(0.0303030312, 0, 0, 0)
+AutoHoops.Size = UDim2.new(0, 277, 0, 42)
+AutoHoops.Font = Enum.Font.Fantasy
+AutoHoops.Text = "Auto Hoops"
+AutoHoops.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoHoops.TextSize = 14.000
+AutoHoops.MouseButton1Down:connect(function()
+	wait(1)
+	_G.Farm3 = true
+
+	while _G.Farm3 == true do wait()
+		for i,v in pairs(game.Workspace.Hoops:GetChildren()) do
+			v.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+		end
+	end
+end)
+
+UICorner_4.Parent = AutoHoops
+
+AutoGems.Name = "AutoGems"
+AutoGems.Parent = AutoFarmFrame
+AutoGems.BackgroundColor3 = Color3.fromRGB(44, 44, 44)
+AutoGems.BorderColor3 = Color3.fromRGB(0, 0, 0)
+AutoGems.BorderSizePixel = 0
+AutoGems.Position = UDim2.new(0.0303030312, 0, 0.266666681, 0)
+AutoGems.Size = UDim2.new(0, 277, 0, 38)
+AutoGems.Font = Enum.Font.Fantasy
+AutoGems.Text = "Auto Gems"
+AutoGems.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoGems.TextSize = 14.000
+AutoGems.MouseButton1Down:connect(function()
+	wait(1)
+	_G.Farm2 = true
+
+	while _G.Farm2 == true do wait()
+		for i,v in pairs(game.Workspace.orbFolder.City:GetChildren()) do
+			if v.Name == "Gem" then
+				v.outerGem.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+			end
+		end
+	end
+end)
+
+UICorner_5.Parent = AutoGems
+
+AutoRebirths.Name = "AutoRebirths"
+AutoRebirths.Parent = AutoFarmFrame
+AutoRebirths.BackgroundColor3 = Color3.fromRGB(44, 44, 44)
+AutoRebirths.BorderColor3 = Color3.fromRGB(0, 0, 0)
+AutoRebirths.BorderSizePixel = 0
+AutoRebirths.Position = UDim2.new(0.0303030312, 0, 0.50555557, 0)
+AutoRebirths.Size = UDim2.new(0, 277, 0, 36)
+AutoRebirths.Font = Enum.Font.Fantasy
+AutoRebirths.Text = "Auto Rebirths"
+AutoRebirths.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoRebirths.TextSize = 14.000
+AutoRebirths.MouseButton1Down:connect(function()
+	wait(1)
+	_G.Rebirth = true
+
+	while _G.Rebirth == true do wait(5)
+		local tbl_main = 
+			{
+				"rebirthRequest"
+			}
+		game:GetService("ReplicatedStorage").rEvents.rebirthEvent:FireServer(unpack(tbl_main))
+	end
+end)
+
+UICorner_6.Parent = AutoRebirths
+
+AutoOrbs.Name = "AutoOrbs"
+AutoOrbs.Parent = AutoFarmFrame
+AutoOrbs.BackgroundColor3 = Color3.fromRGB(44, 44, 44)
+AutoOrbs.BorderColor3 = Color3.fromRGB(0, 0, 0)
+AutoOrbs.BorderSizePixel = 0
+AutoOrbs.Position = UDim2.new(0.0303030312, 0, 0.73888886, 0)
+AutoOrbs.Size = UDim2.new(0, 277, 0, 36)
+AutoOrbs.Font = Enum.Font.Fantasy
+AutoOrbs.Text = "Auto Orbs"
+AutoOrbs.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoOrbs.TextSize = 14.000
+AutoOrbs.MouseButton1Down:connect(function()
+	wait(1)
+	_G.Farm1 = true
+
+	while _G.Farm1 == true do wait()
+		for i,v in pairs(game.Workspace.orbFolder.City:GetChildren()) do
+			if v.Name ~= "Gem" then
+				v.outerOrb.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+			end
+		end
+	end
+end)
+
+UICorner_7.Parent = AutoOrbs
+
+Credits.Name = "Credits"
+Credits.Parent = MainFrame
+Credits.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Credits.BackgroundTransparency = 1.000
+Credits.BorderColor3 = Color3.fromRGB(0, 0, 0)
+Credits.BorderSizePixel = 0
+Credits.Position = UDim2.new(0.0567692779, 0, 0.88490814, 0)
+Credits.Size = UDim2.new(0, 434, 0, 29)
+Credits.Font = Enum.Font.Fantasy
+Credits.Text = "Made by: Superior's Hub (superior & rv_crips)"
+Credits.TextColor3 = Color3.fromRGB(255, 255, 255)
+Credits.TextScaled = true
+Credits.TextSize = 14.000
+Credits.TextWrapped = true
+
+PetsFrame.Name = "PetsFrame"
+PetsFrame.Parent = MainFrame
+PetsFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+PetsFrame.BackgroundTransparency = 1.000
+PetsFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+PetsFrame.BorderSizePixel = 0
+PetsFrame.Position = UDim2.new(0.338266373, 0, 0.188976377, 0)
+PetsFrame.Size = UDim2.new(0, 297, 0, 180)
+PetsFrame.Visible = false
+
+petinfon.Name = "petinfon"
+petinfon.Parent = PetsFrame
+petinfon.BackgroundColor3 = Color3.fromRGB(44, 44, 44)
+petinfon.BorderColor3 = Color3.fromRGB(0, 0, 0)
+petinfon.BorderSizePixel = 0
+petinfon.Position = UDim2.new(0.0303030312, 0, 0, 0)
+petinfon.Size = UDim2.new(0, 277, 0, 42)
+petinfon.Font = Enum.Font.Fantasy
+petinfon.Text = "(OP) Pet Stat Glitcher"
+petinfon.TextColor3 = Color3.fromRGB(255, 255, 255)
+petinfon.TextSize = 14.000
+petinfon.MouseButton1Down:connect(function()
+	loadstring(game:HttpGet(('https://raw.githubusercontent.com/idkevenknowburh/source/refs/heads/main/los'),true))()
+end)
+
+UICorner_8.Parent = petinfon
+
+ImportantNotePetGlitch.Name = "ImportantNotePetGlitch"
+ImportantNotePetGlitch.Parent = PetsFrame
+ImportantNotePetGlitch.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+ImportantNotePetGlitch.BackgroundTransparency = 1.000
+ImportantNotePetGlitch.BorderColor3 = Color3.fromRGB(0, 0, 0)
+ImportantNotePetGlitch.BorderSizePixel = 0
+ImportantNotePetGlitch.Position = UDim2.new(0.00555954222, 0, 0.265791833, 0)
+ImportantNotePetGlitch.Size = UDim2.new(0, 290, 0, 141)
+ImportantNotePetGlitch.Font = Enum.Font.Fantasy
+ImportantNotePetGlitch.Text = "IMPORTANT NOTE: When you turn on the \"Pet Stat Increaser\" BE SURE, TO HAVE LEVEL 1 PETS EQUIPPED! AND DO NOT COLLECT ANY ORBS WHILE THIS ON."
+ImportantNotePetGlitch.TextColor3 = Color3.fromRGB(255, 255, 255)
+ImportantNotePetGlitch.TextSize = 14.000
+ImportantNotePetGlitch.TextStrokeColor3 = Color3.fromRGB(244, 244, 244)
+ImportantNotePetGlitch.TextStrokeTransparency = 5.000

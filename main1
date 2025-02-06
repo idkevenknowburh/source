@@ -219,18 +219,4 @@ loadstring(game:HttpGet(('https://raw.githubusercontent.com/idkevenknowburh/sour
    end,
 })
 
-local Button7 = MainTab:CreateButton({
-   Name = "RIVALS | OP",
-   Callback = function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/yofriendfromschool1/Sky-Hub-Backup/main/Rivals/Rivals%20Latest.lua"))();
-   end,
-})
-
-local Button8 = MainTab:CreateButton({
-   Name = "Natural Disaster Survival | OP",
-   Callback = function()
-loadstring(game:HttpGet("loadstring(game:HttpGet('https://raw.githubusercontent.com/hussain1323232234/My-Scripts/main/Natural%20Disaster'))();
-   end,
-})
-
 Rayfield:LoadConfiguration()

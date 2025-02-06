@@ -1,0 +1,2 @@
+if game:GetService("Players").LocalPlayer.Character:FindFirstChild("FallDamage") then
+		game:GetService("Players").LocalPlayer.Character:FindFirstChild("FallDamage"):Destroy()

@@ -205,4 +205,11 @@ loadstring(game:HttpGet(('https://raw.githubusercontent.com/idkevenknowburh/c/re
    end,
 })
 
+local Button5 = MainTab:CreateButton({
+   Name = "Legends of Speed | OP",
+   Callback = function()
+loadstring(game:HttpGet(('https://raw.githubusercontent.com/idkevenknowburh/source/refs/heads/main/hi'),true))()
+   end,
+})
+
 Rayfield:LoadConfiguration()

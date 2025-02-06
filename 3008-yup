@@ -1,4 +1,3 @@
-getgenv().workesp = state
 	local highlightedworkers = {}
 	task.spawn(function()
 		while wait() do

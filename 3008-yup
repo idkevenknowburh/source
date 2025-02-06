@@ -1,0 +1,58 @@
+getgenv().workesp = state
+	local highlightedworkers = {}
+	task.spawn(function()
+		while wait() do
+			if not getgenv().workesp then
+				for _, objects in pairs(highlightedworkers) do
+					if objects.highlight then
+						objects.highlight:Destroy()
+					end
+					if objects.ui then
+						objects.ui:Destroy()
+					end
+				end
+				highlightedworkers = {}
+				break
+			end
+			for _, v in pairs(game:GetService("Workspace").GameObjects.Physical.Employees:GetDescendants()) do
+				if v.Name == "HumanoidRootPart" and v:IsA("Part") and v.Parent:IsA("Model") then
+					local distance = (v.Position - game:GetService("Players").LocalPlayer.Character.PrimaryPart.Position).magnitude
+					if distance > 200 then
+						if highlightedworkers[v] then
+							if highlightedworkers[v].highlight then
+								highlightedworkers[v].highlight:Destroy()
+							end
+							if highlightedworkers[v].ui then
+								highlightedworkers[v].ui:Destroy()
+							end
+							highlightedworkers[v] = nil
+						end
+					else
+						if not highlightedworkers[v] then
+							local Highlight = Instance.new("Highlight", v.Parent)
+							Highlight.FillColor = Color3.fromRGB(255, 0, 0)
+							Highlight.OutlineColor = Color3.fromRGB(0, 0, 0)
+							local UI = Instance.new("BillboardGui", v.Parent)
+							UI.Size = UDim2.new(0, 1000, 0, 30)
+							UI.AlwaysOnTop = true
+							UI.StudsOffset = Vector3.new(0, 3, 0)
+							local Label = Instance.new("TextLabel", UI)
+							Label.Size = UDim2.new(1, 0, 1, 0)
+							Label.BackgroundTransparency = 1
+							Label.TextScaled = true
+							Label.Text = "Worker"
+							Label.TextColor3 = Color3.fromRGB(0, 0, 0)
+							Label.Font = Enum.Font.Oswald
+							Label.TextStrokeTransparency = 0
+							Label.TextStrokeColor3 = Color3.fromRGB(255, 0, 0)
+							highlightedworkers[v] = {
+								highlight = Highlight,
+								ui = UI
+							}
+						end
+					end
+				end
+			end
+		end
+	end)
+end)

@@ -209,9 +209,9 @@ loadstring(game:HttpGet(('https://raw.githubusercontent.com/idkevenknowburh/sour
 })
 
 local Button6 = MainTab:CreateButton({
-   Name = "Murder Mystery 2 | OP",
+   Name = "Murder Mystery 2 | OP!",
    Callback = function()
-loadstring(game:HttpGet(('https://raw.githubusercontent.com/yofriendfromschool1/Sky-Hub/main/games/murdermystery2.lua'),true))()
+loadstring(game:HttpGet(('https://raw.githubusercontent.com/MarsQQ/ScriptHubScripts/master/MM2%20Admin%20Panel'), true))()
    end,
 })
 

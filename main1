@@ -35,6 +35,8 @@ local Window = Rayfield:CreateWindow({
 })
 
 local MainTab = Window:CreateTab("🏘️ Home", 4483362458) -- Title, Image
+local UniversalTab = Window:CreateTab("🚀Universal", nil) -- Title, Image
+local UniversalSection = UniversalTab:CreateSection("PLAYER CONTROLS")
 local Section = MainTab:CreateSection("🎮 Game-Scripts")
 
 local Button1 = MainTab:CreateButton({
@@ -214,5 +216,14 @@ local Button6 = MainTab:CreateButton({
 loadstring(game:HttpGet(('https://raw.githubusercontent.com/MarsQQ/ScriptHubScripts/master/MM2%20Admin%20Panel'), true))()
    end,
 })
+
+local Button7 = MainTab:CreateButton({
+   Name = "Prison Life | OP!",
+   Callback = function()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/devguy100/PrizzLife/main/Source/release_v0.8.1.lua'))()
+   end,
+})
+
+
 
 Rayfield:LoadConfiguration()

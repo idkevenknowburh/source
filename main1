@@ -215,11 +215,4 @@ loadstring(game:HttpGet(('https://raw.githubusercontent.com/MarsQQ/ScriptHubScri
    end,
 })
 
-local Button7 = MainTab:CreateButton({
-   Name = "Prison Life | OP",
-   Callback = function()
-loadstring(game:HttpGet("https://pastebin.com/raw/4rkRHviN", true))()
-   end,
-})
-
 Rayfield:LoadConfiguration()

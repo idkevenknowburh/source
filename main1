@@ -233,10 +233,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/Hosvile/The-telligenc
    end,
 })
 
-local Divider2 = MainTab:CreateDivider()
-local Section2 = MainTab:CreateSection("Universal")
-
-local Slider21 = UniversalCreateSlider({
+local Slider21 = UniversalTab:CreateSlider({
    Name = "WalkSpeed Changer",
    Range = {0, 200},
    Increment = 10,

@@ -227,7 +227,7 @@ loadstring(game:HttpGet('https://raw.githubusercontent.com/devguy100/PrizzLife/m
 local Button8 = MainTab:CreateButton({
    Name = "Fisch | OP",
    Callback = function()
-loadstring(game:HttpGet("https://nicuse.xyz/MainHub.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/yolobradda/fischjvrre/refs/heads/main/fishrelease"))()
    end,
 })
 

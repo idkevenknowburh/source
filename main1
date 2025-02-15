@@ -204,9 +204,9 @@ loadstring(game:HttpGet(('https://raw.githubusercontent.com/idkevenknowburh/c/re
 })
 
 local Button5 = MainTab:CreateButton({
-   Name = "Legends of Speed | OP",
+   Name = "(UPDATED) Legends of Speed V2 | OP",
    Callback = function()
-loadstring(game:HttpGet(('https://raw.githubusercontent.com/idkevenknowburh/source/refs/heads/main/hi'),true))()
+loadstring(game:HttpGet(('https://raw.githubusercontent.com/idkevenknowburh/legends-of-speed/refs/heads/main/script'),true))()
    end,
 })
 

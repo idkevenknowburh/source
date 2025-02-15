@@ -231,6 +231,13 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/
    end,
 })
 
+local Button9 = MainTab:CreateButton({
+   Name = "KAT! | OP",
+   Callback = function()
+   loadstring(game:HttpGet(('https://raw.githubusercontent.com/idkevenknowburh/kat/refs/heads/main/s'),true))()
+   end,
+})
+
 local ToggleOP = UniversalTab:CreateToggle({
    Name = "OP Autoclicker",
    CurrentValue = false,
@@ -311,7 +318,7 @@ local FlyButton2 = UniversalTab:CreateButton({
    end,
 })
 
-local AimBotButton = Tab:CreateButton({
+local AimBotButton = UniversalTab:CreateButton({
    Name = "(FE) Aimbot GUI (WORKS IN ALL GAMES)",
    Callback = function()
    local Players = game:GetService("Players")

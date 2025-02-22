@@ -30,7 +30,7 @@ local Window = Rayfield:CreateWindow({
       FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
       SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
       GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
-      Key = {"superkey","fg35v","3islifetime"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+      Key = {"freesup","fg35v","3islifetime"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
    }
 })
 
@@ -40,11 +40,13 @@ local UniversalSection = UniversalTab:CreateSection("PLAYER CONTROLS")
 local Section = MainTab:CreateSection("🎮 Game-Scripts")
 
 local Button1 = MainTab:CreateButton({
-   Name = "Fight In A School | OP Script",
+   Name = "(UPDATED) Fight In A School | OP V2",
+   Button1Color = Color3.fromRGB(255, 0, 0), -- Changed the color to red
    Callback = function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/fight-in-a-school-yn-Hub-Script-28121"))()
+loadstring(game:HttpGet("https://pastebin.com/raw/knUMA6ZP"))()
    end,
 })
+
 
 local Button2 = MainTab:CreateButton({
    Name = "Infinite Yield | Admin Cmds",

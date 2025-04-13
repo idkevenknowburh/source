@@ -39,6 +39,14 @@ local UniversalTab = Window:CreateTab("🚀Universal", nil) -- Title, Image
 local UniversalSection = UniversalTab:CreateSection("PLAYER CONTROLS")
 local Section = MainTab:CreateSection("🎮 Game-Scripts")
 
+local Button0 = MainTab:CreateButton({
+   Name = "Arise Crossover (OP) | NEW!",
+   Button1Color = Color3.fromRGB(255, 0, 0), -- Changed the color to red
+   Callback = function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/SKOIXLL/SKYLOLAND/refs/heads/main/Load.lua"))()
+   end,
+})
+
 local Button1 = MainTab:CreateButton({
    Name = "(UPDATED) Fight In A School | OP V2",
    Button1Color = Color3.fromRGB(255, 0, 0), -- Changed the color to red

@@ -1,507 +1,724 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- ============================================
+-- Sheitsa Hub V2
+-- Credits: Sheitsa Hub V2
+-- UI: FluentUI by dawidscripts
+-- ============================================
 
-local Window = Rayfield:CreateWindow({
-   Name = "Superior's Hub",
-   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "OP Superior's Hub",
-   LoadingSubtitle = "by superior dev team",
-   Theme = "DarkBlue", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+-- Services
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+local player = Players.LocalPlayer
 
-   DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+-- ========== CONFIG ==========
+local Keys = {"superior1", "ad35v", "3islifetime"}
+local DiscordLink = "https://discord.gg/ZE6vyxgydK"
+local KeyFileName = "SheitsaHubV2_Key.txt"
+local infiniteJumpConn = nil
 
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = nil, -- Create a custom folder for your hub/game
-      FileName = "Big Hub"
-   },
+-- ========== KEY HELPERS ==========
+local function isValidKey(input)
+    for _, k in ipairs(Keys) do
+        if k:lower() == input:lower() then return true end
+    end
+    return false
+end
 
-   Discord = {
-      Enabled = true, -- Prompt the user to join your Discord server if their executor supports it
-      Invite = "NSjakYggqd", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
-      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
-   },
+local function getSavedKey()
+    local ok, key = pcall(readfile, KeyFileName)
+    return ok and key or nil
+end
 
-   KeySystem = true, -- Set this to true to use our key system
-   KeySettings = {
-      Title = "OP SCRIPT | Superior's Hub",
-      Subtitle = "Simple Key System (KEY CAN CHANGE EVERY 48+ HRS)",
-      Note = "Join Discord 'discord.gg/NSjakYggqd'", -- Use this to tell the user how to get a key
-      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
-      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
-      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
-      Key = {"superior1","ad35v","3islifetime"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
-   }
-})
+local function saveKey(key)
+    pcall(writefile, KeyFileName, key)
+end
 
-local MainTab = Window:CreateTab("🏘️ Home", 4483362458) -- Title, Image
-local UniversalTab = Window:CreateTab("🚀Universal", nil) -- Title, Image
-local UniversalSection = UniversalTab:CreateSection("PLAYER CONTROLS")
-local Section = MainTab:CreateSection("🎮 Game-Scripts")
+-- ========== KEY SYSTEM GUI ==========
+local function showKeySystem()
+    local screen = Instance.new("ScreenGui")
+    screen.Name = "SheitsaKeySystem"
+    screen.ResetOnSpawn = false
+    screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    screen.Parent = CoreGui
 
-local Button0 = MainTab:CreateButton({
-   Name = "Arise Crossover (OP) | NEW!",
-   Button1Color = Color3.fromRGB(255, 0, 0), -- Changed the color to red
-   Callback = function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/SKOIXLL/SKYLOLAND/refs/heads/main/Load.lua"))()
-   end,
-})
+    -- Backdrop
+    local backdrop = Instance.new("Frame")
+    backdrop.Size = UDim2.new(1, 0, 1, 0)
+    backdrop.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    backdrop.BackgroundTransparency = 1
+    backdrop.BorderSizePixel = 0
+    backdrop.Parent = screen
+    TweenService:Create(backdrop, TweenInfo.new(0.5), {BackgroundTransparency = 0.45}):Play()
 
-local Button1 = MainTab:CreateButton({
-   Name = "(UPDATED) Fight In A School | OP V2",
-   Button1Color = Color3.fromRGB(255, 0, 0), -- Changed the color to red
-   Callback = function()
-loadstring(game:HttpGet("https://pastebin.com/raw/knUMA6ZP"))()
-   end,
-})
+    -- Main Frame
+    local frame = Instance.new("Frame")
+    frame.Name = "KeyFrame"
+    frame.Size = UDim2.new(0, 400, 0, 330)
+    frame.Position = UDim2.new(0.5, -200, 0.5, -200)
+    frame.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+    frame.BorderSizePixel = 0
+    frame.BackgroundTransparency = 1
+    frame.Parent = screen
+    TweenService:Create(frame, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        BackgroundTransparency = 0,
+        Position = UDim2.new(0.5, -200, 0.5, -165)
+    }):Play()
 
+    local mainCorner = Instance.new("UICorner")
+    mainCorner.CornerRadius = UDim.new(0, 12)
+    mainCorner.Parent = frame
 
-local Button2 = MainTab:CreateButton({
-   Name = "Infinite Yield | Admin Cmds",
-   Callback = function()
--- I DONT OWN THIS SCRIPT
-loadstring(game:HttpGet(('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'),true))()
-   end,
-})
+    local mainStroke = Instance.new("UIStroke")
+    mainStroke.Color = Color3.fromRGB(55, 55, 65)
+    mainStroke.Thickness = 1
+    mainStroke.Parent = frame
 
-local Button3 = MainTab:CreateButton({
-   Name = "Sword Reach + OP Universal Controls",
-   Callback = function()
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+    -- Title Bar
+    local titleBar = Instance.new("Frame")
+    titleBar.Size = UDim2.new(1, 0, 0, 46)
+    titleBar.BackgroundColor3 = Color3.fromRGB(36, 36, 44)
+    titleBar.BorderSizePixel = 0
+    titleBar.Parent = frame
 
-local Window = Rayfield:CreateWindow({
-   Name = "(VERY OP) Sword Reach + Universal Player Controls",
-   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "(VERY OP) Sword Reach + Universal Controls",
-   LoadingSubtitle = "by Superior's Hub",
-   Theme = "Bloom", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+    local tbCorner = Instance.new("UICorner")
+    tbCorner.CornerRadius = UDim.new(0, 12)
+    tbCorner.Parent = titleBar
 
-   DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+    local tbFix = Instance.new("Frame")
+    tbFix.Size = UDim2.new(1, 0, 0, 12)
+    tbFix.Position = UDim2.new(0, 0, 1, -12)
+    tbFix.BackgroundColor3 = Color3.fromRGB(36, 36, 44)
+    tbFix.BorderSizePixel = 0
+    tbFix.Parent = titleBar
 
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = nil, -- Create a custom folder for your hub/game
-      FileName = "Big Hub"
-   },
+    local title = Instance.new("TextLabel")
+    title.Text = "🔑  Sheitsa Hub V2"
+    title.Size = UDim2.new(1, -90, 1, 0)
+    title.Position = UDim2.new(0, 16, 0, 0)
+    title.BackgroundTransparency = 1
+    title.TextColor3 = Color3.fromRGB(235, 235, 240)
+    title.TextSize = 15
+    title.Font = Enum.Font.GothamBold
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = titleBar
 
-   Discord = {
-      Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
-      Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
-      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
-   },
+    -- Minimize Button
+    local minBtn = Instance.new("TextButton")
+    minBtn.Size = UDim2.new(0, 30, 0, 30)
+    minBtn.Position = UDim2.new(1, -66, 0, 8)
+    minBtn.BackgroundColor3 = Color3.fromRGB(52, 52, 62)
+    minBtn.Text = "—"
+    minBtn.TextColor3 = Color3.fromRGB(190, 190, 200)
+    minBtn.TextSize = 18
+    minBtn.Font = Enum.Font.GothamBold
+    minBtn.BorderSizePixel = 0
+    minBtn.AutoButtonColor = false
+    minBtn.Parent = titleBar
+    local minC = Instance.new("UICorner"); minC.CornerRadius = UDim.new(0, 7); minC.Parent = minBtn
 
-   KeySystem = false, -- Set this to true to use our key system
-   KeySettings = {
-      Title = "Untitled",
-      Subtitle = "Key System",
-      Note = "No method of obtaining the key is provided", -- Use this to tell the user how to get a key
-      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
-      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
-      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
-      Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
-   }
-})
+    -- Close Button
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Size = UDim2.new(0, 30, 0, 30)
+    closeBtn.Position = UDim2.new(1, -32, 0, 8)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(195, 50, 50)
+    closeBtn.Text = "✕"
+    closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeBtn.TextSize = 14
+    closeBtn.Font = Enum.Font.GothamBold
+    closeBtn.BorderSizePixel = 0
+    closeBtn.AutoButtonColor = false
+    closeBtn.Parent = titleBar
+    local closeC = Instance.new("UICorner"); closeC.CornerRadius = UDim.new(0, 7); closeC.Parent = closeBtn
 
-local MainTab = Window:CreateTab("🏘️ Home", nil) -- Title, Image
-local MainSection = MainTab:CreateSection("SWORD REACH")
+    -- Content Container
+    local content = Instance.new("Frame")
+    content.Size = UDim2.new(1, -32, 1, -126)
+    content.Position = UDim2.new(0, 16, 0, 56)
+    content.BackgroundTransparency = 1
+    content.Parent = frame
 
-local Toggle = MainTab:CreateToggle({
-   Name = "Sword REACH (KILL AURA)",
-   CurrentValue = false,
-   Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Value)
-      -- The function that takes place when the toggle is pressed
-      local Library = loadstring(Game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wizard"))()
-local PhantomForcesWindow = Library:NewWindow("Universal sword reach")
-local KillingCheats = PhantomForcesWindow:NewSection("Kill Options")
+    -- Important Caption
+    local caption = Instance.new("TextLabel")
+    caption.Text = "⚠️  To get your key — join our Discord server, go to the #key channel, and copy it. It's that simple!"
+    caption.Size = UDim2.new(1, 0, 0, 46)
+    caption.BackgroundTransparency = 1
+    caption.TextColor3 = Color3.fromRGB(255, 195, 70)
+    caption.TextSize = 12
+    caption.Font = Enum.Font.GothamMedium
+    caption.TextWrapped = true
+    caption.TextXAlignment = Enum.TextXAlignment.Left
+    caption.Parent = content
 
-local hitboxSize = 30
-local hitboxActive = false
-local colors = {Color3.fromRGB(255, 0, 0), Color3.fromRGB(0, 255, 0), Color3.fromRGB(0, 0, 255), Color3.fromRGB(255, 255, 0)}
+    -- Key Textbox
+    local box = Instance.new("TextBox")
+    box.PlaceholderText = "  Enter your key here..."
+    box.Text = ""
+    box.Size = UDim2.new(1, 0, 0, 42)
+    box.Position = UDim2.new(0, 0, 0, 52)
+    box.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
+    box.TextColor3 = Color3.fromRGB(220, 220, 228)
+    box.PlaceholderColor3 = Color3.fromRGB(90, 90, 105)
+    box.TextSize = 14
+    box.Font = Enum.Font.Gotham
+    box.BorderSizePixel = 0
+    box.ClearTextOnFocus = false
+    box.Parent = content
+    local boxC = Instance.new("UICorner"); boxC.CornerRadius = UDim.new(0, 8); boxC.Parent = box
+    local boxS = Instance.new("UIStroke"); boxS.Color = Color3.fromRGB(58, 58, 68); boxS.Thickness = 1; boxS.Parent = box
 
-local function ModifyHitbox(size)
-    local player = game:GetService("Players").LocalPlayer
-    local char = player.Character
-    if not char then return end
+    -- Get Key Button (Discord copy)
+    local getKeyBtn = Instance.new("TextButton")
+    getKeyBtn.Text = "🔗  Get Key"
+    getKeyBtn.Size = UDim2.new(0, 162, 0, 40)
+    getKeyBtn.Position = UDim2.new(0, 0, 0, 108)
+    getKeyBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+    getKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    getKeyBtn.TextSize = 13
+    getKeyBtn.Font = Enum.Font.GothamSemibold
+    getKeyBtn.BorderSizePixel = 0
+    getKeyBtn.AutoButtonColor = false
+    getKeyBtn.Parent = content
+    local gkC = Instance.new("UICorner"); gkC.CornerRadius = UDim.new(0, 8); gkC.Parent = getKeyBtn
 
-    local tool = nil
-    for _, v in pairs(char:GetChildren()) do
-        if v:IsA("Tool") then
-            tool = v
-            break
+    -- Submit Button
+    local submitBtn = Instance.new("TextButton")
+    submitBtn.Text = "Submit Key  →"
+    submitBtn.Size = UDim2.new(0, 168, 0, 40)
+    submitBtn.Position = UDim2.new(1, -168, 0, 108)
+    submitBtn.BackgroundColor3 = Color3.fromRGB(75, 200, 115)
+    submitBtn.TextColor3 = Color3.fromRGB(10, 10, 10)
+    submitBtn.TextSize = 13
+    submitBtn.Font = Enum.Font.GothamSemibold
+    submitBtn.BorderSizePixel = 0
+    submitBtn.AutoButtonColor = false
+    submitBtn.Parent = content
+    local sbC = Instance.new("UICorner"); sbC.CornerRadius = UDim.new(0, 8); sbC.Parent = submitBtn
+
+    -- Status Label
+    local status = Instance.new("TextLabel")
+    status.Text = ""
+    status.Size = UDim2.new(1, 0, 0, 22)
+    status.Position = UDim2.new(0, 0, 0, 160)
+    status.BackgroundTransparency = 1
+    status.TextColor3 = Color3.fromRGB(200, 60, 60)
+    status.TextSize = 12
+    status.Font = Enum.Font.GothamMedium
+    status.TextXAlignment = Enum.TextXAlignment.Left
+    status.Parent = content
+
+    -- Minimize Toggle Button (appears when minimized)
+    local toggleBtn = Instance.new("TextButton")
+    toggleBtn.Name = "ToggleBtn"
+    toggleBtn.Size = UDim2.new(0, 46, 0, 46)
+    toggleBtn.Position = UDim2.new(0, 20, 1, -66)
+    toggleBtn.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+    toggleBtn.Text = "🔑"
+    toggleBtn.TextSize = 22
+    toggleBtn.BorderSizePixel = 0
+    toggleBtn.Visible = false
+    toggleBtn.AutoButtonColor = false
+    toggleBtn.Parent = screen
+    local tgC = Instance.new("UICorner"); tgC.CornerRadius = UDim.new(0, 11); tgC.Parent = toggleBtn
+    local tgS = Instance.new("UIStroke"); tgS.Color = Color3.fromRGB(75, 200, 115); tgS.Thickness = 2; tgS.Parent = toggleBtn
+
+    -- ========== DRAG ==========
+    local dragging, dragStart, startPos
+    titleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true; dragStart = input.Position; startPos = frame.Position
         end
+    end)
+    titleBar.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+    UIS.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local d = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+        end
+    end)
+
+    -- ========== MINIMIZE ==========
+    local minimized = false
+    local function doMinimize()
+        minimized = true
+        local t1 = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+        local t2 = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+        TweenService:Create(frame, t1, {BackgroundTransparency = 1}):Play()
+        TweenService:Create(backdrop, t2, {BackgroundTransparency = 1}):Play()
+        task.delay(0.3, function()
+            frame.Visible = false; backdrop.Visible = false; toggleBtn.Visible = true
+            TweenService:Create(toggleBtn, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, 46, 0, 46)
+            }):Play()
+        end)
+    end
+    local function doRestore()
+        minimized = false
+        frame.Visible = true; backdrop.Visible = true; toggleBtn.Visible = false
+        local t1 = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        local t2 = TweenInfo.new(0.3)
+        TweenService:Create(frame, t1, {BackgroundTransparency = 0}):Play()
+        TweenService:Create(backdrop, t2, {BackgroundTransparency = 0.45}):Play()
     end
 
-    if not tool then
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Need Tool";
-            Text = "Need Tool";
-            Duration = 5;
-        })
-        return
-    end
+    minBtn.MouseButton1Click:Connect(doMinimize)
+    toggleBtn.MouseButton1Click:Connect(doRestore)
 
-    hitboxActive = size > 1
+    -- ========== CLOSE ==========
+    closeBtn.MouseButton1Click:Connect(function()
+        local t1 = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+        TweenService:Create(frame, t1, {BackgroundTransparency = 1}):Play()
+        TweenService:Create(backdrop, t1, {BackgroundTransparency = 1}):Play()
+        task.delay(0.3, function() screen:Destroy() end)
+    end)
 
-    if hitboxActive then
-        local sound = Instance.new("Sound")
-        sound.SoundId = "rbxassetid://413861777"
-        sound.Parent = game:GetService("SoundService")
-        sound:Play()
+    -- ========== GET KEY (copy discord) ==========
+    getKeyBtn.MouseButton1Click:Connect(function()
+        pcall(setclipboard, DiscordLink)
+        getKeyBtn.Text = "✓  Copied!"
+        status.Text = "Discord link copied! Join → #key channel"
+        status.TextColor3 = Color3.fromRGB(75, 200, 115)
+        task.delay(2.5, function() getKeyBtn.Text = "🔗  Get Key" end)
+    end)
 
-        local handle = tool:FindFirstChild("Handle")
-        if handle then
-            handle.Massless = true
-            handle.Transparency = 1
-            handle.Size = Vector3.new(size, size, size)
-
-            local selectionBox = Instance.new("SelectionBox", handle)
-            selectionBox.Adornee = handle
-
-            spawn(function()
-                local index = 1
-                while hitboxActive do
-                    selectionBox.Color3 = colors[index]
-                    index = (index % #colors) + 1
-                    wait(0.5)
-                end
-                selectionBox:Destroy()
+    -- ========== SUBMIT KEY ==========
+    local function submitKey()
+        local input = box.Text
+        if input == "" or input:match("^%s*$") then
+            status.Text = "⚠  Please enter a key first!"
+            status.TextColor3 = Color3.fromRGB(255, 195, 70)
+            return
+        end
+        if isValidKey(input) then
+            saveKey(input)
+            status.Text = "✓  Valid key! Loading hub..."
+            status.TextColor3 = Color3.fromRGB(75, 200, 115)
+            submitBtn.Text = "✓  Valid!"
+            submitBtn.BackgroundColor3 = Color3.fromRGB(50, 160, 90)
+            task.delay(0.8, function()
+                local t1 = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+                TweenService:Create(frame, t1, {BackgroundTransparency = 1}):Play()
+                TweenService:Create(backdrop, t1, {BackgroundTransparency = 1}):Play()
+                task.delay(0.5, function()
+                    screen:Destroy()
+                    loadHub()
+                end)
+            end)
+        else
+            status.Text = "✗  Invalid key. Try again."
+            status.TextColor3 = Color3.fromRGB(220, 55, 55)
+            TweenService:Create(boxS, TweenInfo.new(0.25), {Color = Color3.fromRGB(220, 55, 55)}):Play()
+            task.delay(0.7, function()
+                TweenService:Create(boxS, TweenInfo.new(0.25), {Color = Color3.fromRGB(58, 58, 68)}):Play()
             end)
         end
-    else
-        if tool and tool:FindFirstChild("Handle") then
-            local handle = tool.Handle
-            handle.Size = Vector3.new(1, 1, 1)
-            for _, v in pairs(handle:GetChildren()) do
-                if v:IsA("SelectionBox") then
-                    v:Destroy()
+    end
+
+    submitBtn.MouseButton1Click:Connect(submitKey)
+    box.FocusLost:Connect(function(enterPressed) if enterPressed then submitKey() end end)
+end
+
+-- ========== MAIN HUB (FluentUI) ==========
+function loadHub()
+    local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+
+    local Window = Fluent:CreateWindow({
+        Title = "Sheitsa Hub V2",
+        SubTitle = "by Sheitsa",
+        TabWidth = 100,
+        Size = UDim2.fromOffset(580, 460),
+        Theme = "Darker",
+        MinimizeKey = Enum.KeyCode.RightControl
+    })
+
+    local Tabs = {
+        Main     = Window:AddTab({ Title = "Main",     Icon = "home" }),
+        Games    = Window:AddTab({ Title = "Games",    Icon = "gamepad-2" }),
+        Player   = Window:AddTab({ Title = "Player",   Icon = "user" }),
+        Misc     = Window:AddTab({ Title = "Misc",     Icon = "wrench" }),
+        Settings = Window:AddTab({ Title = "Settings", Icon = "sliders-horizontal" }),
+        Credits  = Window:AddTab({ Title = "Credits",  Icon = "heart" })
+    }
+
+    -- ==========================================
+    --  MAIN TAB
+    -- ==========================================
+    Tabs.Main:AddParagraph({
+        Title = "Welcome to Sheitsa Hub V2",
+        Content = "Your all-in-one Roblox script hub. Game scripts, player controls, and more — all in one place."
+    })
+
+    Tabs.Main:AddButton({
+        Title = "Join our Discord",
+        Description = "Copies the invite link to your clipboard.",
+        Callback = function()
+            pcall(setclipboard, DiscordLink)
+            Fluent:Notify({ Title = "Sheitsa Hub V2", Content = "Discord link copied!", Duration = 3 })
+        end
+    })
+
+    Tabs.Main:AddSection("Changelog")
+
+    Tabs.Main:AddParagraph({
+        Title = "v2.0 — Full Rewrite",
+        Content = "• Migrated to FluentUI (modern & smooth)\n• New custom key system with save\n• Reorganized tabs: Main, Games, Player, Misc, Settings, Credits\n• All game scripts in alphabetical order\n• Cleaner code, better experience"
+    })
+
+    Tabs.Main:AddParagraph({
+        Title = "v1.0 — Original Release",
+        Content = "• Rayfield UI\n• Basic game scripts\n• Universal player controls"
+    })
+
+    -- ==========================================
+    --  GAMES TAB  (alphabetical order)
+    -- ==========================================
+    Tabs.Games:AddSection("A — C")
+
+    Tabs.Games:AddButton({
+        Title = "Arise Crossover (OP) | NEW",
+        Description = "Powerful script for Arise Crossover.",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/SKOIXLL/SKYLOLAND/refs/heads/main/Load.lua"))()
+            Fluent:Notify({ Title = "Games", Content = "Loaded: Arise Crossover", Duration = 3 })
+        end
+    })
+
+    Tabs.Games:AddButton({
+        Title = "Fight In A School (OP V2) | UPDATED",
+        Description = "Updated script for Fight In A School.",
+        Callback = function()
+            loadstring(game:HttpGet("https://pastebin.com/raw/knUMA6ZP"))()
+            Fluent:Notify({ Title = "Games", Content = "Loaded: Fight In A School", Duration = 3 })
+        end
+    })
+
+    Tabs.Games:AddButton({
+        Title = "Fisch (OP)",
+        Description = "Script for Fisch.",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
+            Fluent:Notify({ Title = "Games", Content = "Loaded: Fisch", Duration = 3 })
+        end
+    })
+
+    Tabs.Games:AddSection("I — K")
+
+    Tabs.Games:AddButton({
+        Title = "Infinite Yield",
+        Description = "Universal admin commands. (Not owned by us)",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source", true))()
+            Fluent:Notify({ Title = "Games", Content = "Loaded: Infinite Yield", Duration = 3 })
+        end
+    })
+
+    Tabs.Games:AddButton({
+        Title = "KAT (OP)",
+        Description = "Script for KAT.",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/idkevenknowburh/kat/refs/heads/main/s", true))()
+            Fluent:Notify({ Title = "Games", Content = "Loaded: KAT", Duration = 3 })
+        end
+    })
+
+    Tabs.Games:AddSection("L — P")
+
+    Tabs.Games:AddButton({
+        Title = "Legends of Speed (OP V2) | UPDATED",
+        Description = "Updated script for Legends of Speed.",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/idkevenknowburh/legends-of-speed/refs/heads/main/script", true))()
+            Fluent:Notify({ Title = "Games", Content = "Loaded: Legends of Speed", Duration = 3 })
+        end
+    })
+
+    Tabs.Games:AddButton({
+        Title = "LUCKY BLOCK Battlegrounds",
+        Description = "Script for LUCKY BLOCK Battlegrounds.",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/idkevenknowburh/c/refs/heads/main/d", true))()
+            Fluent:Notify({ Title = "Games", Content = "Loaded: LUCKY BLOCK Battlegrounds", Duration = 3 })
+        end
+    })
+
+    Tabs.Games:AddButton({
+        Title = "Murder Mystery 2 (OP)",
+        Description = "Admin panel for Murder Mystery 2.",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/MarsQQ/ScriptHubScripts/master/MM2%20Admin%20Panel", true))()
+            Fluent:Notify({ Title = "Games", Content = "Loaded: Murder Mystery 2", Duration = 3 })
+        end
+    })
+
+    Tabs.Games:AddButton({
+        Title = "Prison Life (OP)",
+        Description = "Script for Prison Life.",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/devguy100/PrizzLife/main/Source/release_v0.8.1.lua"))()
+            Fluent:Notify({ Title = "Games", Content = "Loaded: Prison Life", Duration = 3 })
+        end
+    })
+
+    Tabs.Games:AddSection("S")
+
+    Tabs.Games:AddButton({
+        Title = "Sword Reach + Universal Controls",
+        Description = "Hitbox expander with increase/decrease/reset controls.",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wizard"))()
+            Fluent:Notify({ Title = "Games", Content = "Loaded: Sword Reach GUI", Duration = 3 })
+        end
+    })
+
+    -- ==========================================
+    --  PLAYER TAB
+    -- ==========================================
+    Tabs.Player:AddSection("Movement")
+
+    Tabs.Player:AddSlider({
+        Title = "WalkSpeed",
+        Description = "Change your walk speed.",
+        Min = 0,
+        Max = 200,
+        Default = 16,
+        Callback = function(Value)
+            local char = player.Character
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid.WalkSpeed = Value
+            end
+        end
+    })
+
+    Tabs.Player:AddSlider({
+        Title = "JumpPower",
+        Description = "Change your jump power.",
+        Min = 0,
+        Max = 300,
+        Default = 50,
+        Callback = function(Value)
+            local char = player.Character
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid.JumpPower = Value
+            end
+        end
+    })
+
+    Tabs.Player:AddToggle({
+        Title = "Infinite Jump",
+        Description = "Jump endlessly mid-air.",
+        Default = false,
+        Callback = function(Value)
+            if Value then
+                infiniteJumpConn = UIS.JumpRequest:Connect(function()
+                    local char = player.Character
+                    if char and char:FindFirstChild("Humanoid") then
+                        char.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                    end
+                end)
+            else
+                if infiniteJumpConn then
+                    infiniteJumpConn:Disconnect()
+                    infiniteJumpConn = nil
                 end
             end
         end
-    end
+    })
+
+    Tabs.Player:AddSection("Tools")
+
+    Tabs.Player:AddButton({
+        Title = "Fly GUI V3",
+        Description = "Opens the Fly GUI for flight controls.",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()
+            Fluent:Notify({ Title = "Player", Content = "Loaded: Fly GUI V3", Duration = 3 })
+        end
+    })
+
+    Tabs.Player:AddButton({
+        Title = "Reset Infinite Jump",
+        Description = "Disables infinite jump and resets your character.",
+        Callback = function()
+            if infiniteJumpConn then
+                infiniteJumpConn:Disconnect()
+                infiniteJumpConn = nil
+            end
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid.Health = 0
+            end
+            Fluent:Notify({ Title = "Player", Content = "Infinite Jump OFF — Character reset.", Duration = 3 })
+        end
+    })
+
+    -- ==========================================
+    --  MISC TAB
+    -- ==========================================
+    Tabs.Misc:AddSection("Automation")
+
+    Tabs.Misc:AddButton({
+        Title = "OP Autoclicker",
+        Description = "Auto-clicker tool.",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Hosvile/The-telligence/main/MC%20KSystem%202"))()
+            Fluent:Notify({ Title = "Misc", Content = "Loaded: Autoclicker", Duration = 3 })
+        end
+    })
+
+    Tabs.Misc:AddSection("Combat")
+
+    Tabs.Misc:AddButton({
+        Title = "(FE) Aimbot GUI",
+        Description = "Aimbot that works in FE games. Draggable GUI included.",
+        Callback = function()
+            local Players_ = game:GetService("Players")
+            local UIS_ = game:GetService("UserInputService")
+            local RunService_ = game:GetService("RunService")
+            local localPlayer_ = Players_.LocalPlayer
+            local camera_ = game:GetService("Workspace").CurrentCamera
+            local lockOnActive = false
+            local teamCheckActive = false
+            local fovRadius = 125
+
+            local sg = Instance.new("ScreenGui")
+            sg.Name = "AimbotGui"
+            sg.Parent = game:GetService("CoreGui")
+
+            local toggleBtn_ = Instance.new("TextButton")
+            toggleBtn_.Parent = sg
+            toggleBtn_.Size = UDim2.new(0, 150, 0, 50)
+            toggleBtn_.Position = UDim2.new(0, 100, 0, 100)
+            toggleBtn_.Text = "Toggle Lock-On"
+            toggleBtn_.Draggable = true
+            toggleBtn_.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+            toggleBtn_.TextColor3 = Color3.fromRGB(220, 220, 225)
+            toggleBtn_.Font = Enum.Font.GothamSemibold
+            toggleBtn_.TextSize = 13
+            local tbc = Instance.new("UICorner"); tbc.CornerRadius = UDim.new(0, 8); tbc.Parent = toggleBtn_
+
+            local teamBtn_ = Instance.new("TextButton")
+            teamBtn_.Parent = sg
+            teamBtn_.Size = UDim2.new(0, 150, 0, 50)
+            teamBtn_.Position = UDim2.new(0, 100, 0, 160)
+            teamBtn_.Text = "Toggle Team Check"
+            teamBtn_.Draggable = true
+            teamBtn_.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+            teamBtn_.TextColor3 = Color3.fromRGB(220, 220, 225)
+            teamBtn_.Font = Enum.Font.GothamSemibold
+            teamBtn_.TextSize = 13
+            local tec = Instance.new("UICorner"); tec.CornerRadius = UDim.new(0, 8); tec.Parent = teamBtn_
+
+            local fovCircle = Instance.new("ImageLabel")
+            fovCircle.Parent = sg
+            fovCircle.AnchorPoint = Vector2.new(0.5, 0.5)
+            fovCircle.Size = UDim2.new(0, fovRadius * 2, 0, fovRadius * 2)
+            fovCircle.Image = "rbxassetid://432312433"
+            fovCircle.ImageTransparency = 0.5
+            fovCircle.ImageColor3 = Color3.new(1, 1, 1)
+            fovCircle.BackgroundTransparency = 1
+            fovCircle.Visible = false
+            fovCircle.ZIndex = 0
+
+            local function isPlayerVisible(targetPlayer)
+                if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("Head") then return false end
+                if teamCheckActive and targetPlayer.Team == localPlayer_.Team then return false end
+                local targetHead = targetPlayer.Character.Head.Position
+                local dir = (targetHead - camera_.CFrame.Position).unit
+                local ray = Ray.new(camera_.CFrame.Position, dir * fovRadius)
+                local part, _ = game:GetService("Workspace"):FindPartOnRay(ray, localPlayer_.Character, false, true)
+                if part and part:IsDescendantOf(targetPlayer.Character) then
+                    local dot = camera_.CFrame.LookVector:Dot(dir)
+                    local angle = math.deg(math.acos(dot))
+                    return angle <= (fovRadius / 2)
+                end
+                return false
+            end
+
+            toggleBtn_.MouseButton1Click:Connect(function()
+                lockOnActive = not lockOnActive
+                toggleBtn_.Text = lockOnActive and "Lock-On ON" or "Toggle Lock-On"
+                toggleBtn_.BackgroundColor3 = lockOnActive and Color3.fromRGB(75, 200, 115) or Color3.fromRGB(30, 30, 36)
+                fovCircle.Visible = lockOnActive
+            end)
+
+            teamBtn_.MouseButton1Click:Connect(function()
+                teamCheckActive = not teamCheckActive
+                teamBtn_.Text = teamCheckActive and "Team Check ON" or "Toggle Team Check"
+                teamBtn_.BackgroundColor3 = teamCheckActive and Color3.fromRGB(75, 200, 115) or Color3.fromRGB(30, 30, 36)
+            end)
+
+            RunService_.RenderStepped:Connect(function()
+                if lockOnActive then
+                    for _, p in ipairs(Players_:GetPlayers()) do
+                        if p ~= localPlayer_ and isPlayerVisible(p) then
+                            local head = p.Character.Head
+                            local direction = (head.Position - camera_.CFrame.Position).unit
+                            camera_.CFrame = CFrame.new(camera_.CFrame.Position, camera_.CFrame.Position + direction * 10)
+                            break
+                        end
+                    end
+                end
+            end)
+
+            Fluent:Notify({ Title = "Misc", Content = "Aimbot GUI loaded!", Duration = 3 })
+        end
+    })
+
+    -- ==========================================
+    --  SETTINGS TAB
+    -- ==========================================
+    Tabs.Settings:AddParagraph({
+        Title = "Settings",
+        Content = "Click the ⚙️ gear icon at the top of the hub to change themes, toggle Acrylic blur, adjust transparency, and more.\n\nDefault theme: Darker\n\nAll settings are automatically saved by FluentUI."
+    })
+
+    Tabs.Settings:AddButton({
+        Title = "Reset Configuration",
+        Description = "Clears all saved FluentUI settings.",
+        Callback = function()
+            Fluent:SaveConfiguration(true)
+            Fluent:Notify({ Title = "Settings", Content = "Configuration reset! Reloading...", Duration = 3 })
+            task.delay(1.5, function()
+                Fluent:Unload()
+                loadHub()
+            end)
+        end
+    })
+
+    -- ==========================================
+    --  CREDITS TAB
+    -- ==========================================
+    Tabs.Credits:AddParagraph({
+        Title = "Sheitsa Hub V2",
+        Content = "Made with ❤️\n\nHub & Scripting: Sheitsa Hub V2\n\nUI Library: FluentUI by dawidscripts\nhttps://github.com/dawid-scripts/Fluent\n\nThank you for using Sheitsa Hub V2!"
+    })
+
+    Tabs.Credits:AddButton({
+        Title = "Join our Discord",
+        Description = "discord.gg/ZE6vyxgydK",
+        Callback = function()
+            pcall(setclipboard, DiscordLink)
+            Fluent:Notify({ Title = "Credits", Content = "Discord link copied!", Duration = 3 })
+        end
+    })
+
+    -- ==========================================
+    --  NOTIFICATION
+    -- ==========================================
+    Fluent:Notify({
+        Title = "Sheitsa Hub V2",
+        Content = "Hub loaded successfully! Enjoy.",
+        Duration = 5
+    })
 end
 
-KillingCheats:CreateButton("Increase Hitbox", function()
-    hitboxSize = hitboxSize + 5
-    ModifyHitbox(hitboxSize)
-end)
-
-KillingCheats:CreateButton("Decrease Hitbox", function()
-    if hitboxSize > 5 then
-        hitboxSize = hitboxSize - 5
-        ModifyHitbox(hitboxSize)
-    end
-end)
-
-KillingCheats:CreateButton("Reset Hitbox", function()
-    hitboxSize = 1
-    ModifyHitbox(hitboxSize)
-end)
-   end,
-})
-
-local Divider = MainTab:CreateDivider()
-local Section = MainTab:CreateSection("AUTOCLICKER")
-
-local Toggle = MainTab:CreateToggle({
-   Name = "OP Autoclicker",
-   CurrentValue = false,
-   Flag = "Toggle2", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Value)
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Hosvile/The-telligence/main/MC%20KSystem%202"))()
-   end,
-})
-
-local Divider2 = MainTab:CreateDivider()
-local Section2 = MainTab:CreateSection("Universal")
-
-local Slider = MainTab:CreateSlider({
-   Name = "WalkSpeed Changer",
-   Range = {0, 200},
-   Increment = 10,
-   Suffix = "Speed",
-   CurrentValue = 10,
-   Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Value)
-      -- The function that takes place when the slider changes
-      -- Set the player's walk speed to the value of the slider
-      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-   end,
-})
-
-local Slider2 = MainTab:CreateSlider({
-   Name = "Jumppower Changer",
-   Range = {0, 300},
-   Increment = 10,
-   Suffix = "JumpPower",
-   CurrentValue = 10,
-   Flag = "Slider2", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Value)
-      -- The function that takes place when the slider changes
-      -- Set the player's jump power to the value of the slider
-      game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
-   end,
-})
-
-local ButtonOn = MainTab:CreateButton({
-   Name = "Infinite Jump (TURN ON)",
-   Callback = function()
-   -- Infinite Jump Script by Ashborn
--- Discord: ashbornthegoat
-
--- Services
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-
--- Get the local player and their character
-local localPlayer = Players.LocalPlayer
-local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-
--- Infinite jump logic
-UserInputService.JumpRequest:Connect(function()
-    if humanoid then
-        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-    end
-end)
-   end,
-})
-
-local ButtonOff = MainTab:CreateButton({
-   Name = "Infinite Jump (TURN OFF 'will reset character')",
-   Callback = function()
-local function forceResetAction()
-    local player = game.Players.LocalPlayer
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
-        player.Character.Humanoid.Health = 0
-    end
+-- ========== STARTUP ==========
+local saved = getSavedKey()
+if saved and isValidKey(saved) then
+    loadHub()
+else
+    showKeySystem()
 end
-   end,
-})
-
-local FlyButton = MainTab:CreateButton({
-   Name = "FLY GUI V3",
-   Callback = function()
-   loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()
-   end,
-})
-
-Rayfield:LoadConfiguration()
-   end,
-})
-
-local Button4 = MainTab:CreateButton({
-   Name = "LUCKY BLOCK Battlegrounds",
-   Callback = function()
-loadstring(game:HttpGet(('https://raw.githubusercontent.com/idkevenknowburh/c/refs/heads/main/d'),true))()
-   end,
-})
-
-local Button5 = MainTab:CreateButton({
-   Name = "(UPDATED) Legends of Speed V2 | OP",
-   Callback = function()
-loadstring(game:HttpGet(('https://raw.githubusercontent.com/idkevenknowburh/legends-of-speed/refs/heads/main/script'),true))()
-   end,
-})
-
-local Button6 = MainTab:CreateButton({
-   Name = "Murder Mystery 2 | OP!",
-   Callback = function()
-loadstring(game:HttpGet(('https://raw.githubusercontent.com/MarsQQ/ScriptHubScripts/master/MM2%20Admin%20Panel'), true))()
-   end,
-})
-
-local Button7 = MainTab:CreateButton({
-   Name = "Prison Life | OP!",
-   Callback = function()
-loadstring(game:HttpGet('https://raw.githubusercontent.com/devguy100/PrizzLife/main/Source/release_v0.8.1.lua'))()
-   end,
-})
-
-local Button8 = MainTab:CreateButton({
-   Name = "Fisch | OP!",
-   Callback = function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
-   end,
-})
-
-local Button9 = MainTab:CreateButton({
-   Name = "KAT! | OP",
-   Callback = function()
-   loadstring(game:HttpGet(('https://raw.githubusercontent.com/idkevenknowburh/kat/refs/heads/main/s'),true))()
-   end,
-})
-
-local ToggleOP = UniversalTab:CreateToggle({
-   Name = "OP Autoclicker",
-   CurrentValue = false,
-   Flag = "Toggle2", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Value)
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Hosvile/The-telligence/main/MC%20KSystem%202"))()
-   end,
-})
-
-local Slider21 = UniversalTab:CreateSlider({
-   Name = "WalkSpeed Changer",
-   Range = {0, 200},
-   Increment = 10,
-   Suffix = "Speed",
-   CurrentValue = 10,
-   Flag = "Slider21", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Value)
-      -- The function that takes place when the slider changes
-      -- Set the player's walk speed to the value of the slider
-      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-   end,
-})
-
-local Slider22 = UniversalTab:CreateSlider({
-   Name = "Jumppower Changer",
-   Range = {0, 300},
-   Increment = 10,
-   Suffix = "JumpPower",
-   CurrentValue = 10,
-   Flag = "Slider22", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Value)
-      -- The function that takes place when the slider changes
-      -- Set the player's jump power to the value of the slider
-      game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
-   end,
-})
-
-local ButtonOn1 = UniversalTab:CreateButton({
-   Name = "Infinite Jump (TURN ON)",
-   Callback = function()
-   -- Infinite Jump Script by Ashborn
--- Discord: ashbornthegoat
-
--- Services
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-
--- Get the local player and their character
-local localPlayer = Players.LocalPlayer
-local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-
--- Infinite jump logic
-UserInputService.JumpRequest:Connect(function()
-    if humanoid then
-        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-    end
-end)
-   end,
-})
-
-local ButtonOff1 = UniversalTab:CreateButton({
-   Name = "Infinite Jump (TURN OFF 'will reset character')",
-   Callback = function()
-local function forceResetAction()
-    local player = game.Players.LocalPlayer
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
-        player.Character.Humanoid.Health = 0
-    end
-end
-   end,
-})
-
-local FlyButton2 = UniversalTab:CreateButton({
-   Name = "FLY GUI V3",
-   Callback = function()
-   loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()
-   end,
-})
-
-local AimBotButton = UniversalTab:CreateButton({
-   Name = "(FE) Aimbot GUI (WORKS IN ALL GAMES)",
-   Callback = function()
-   local Players = game:GetService("Players")
-	local UserInputService = game:GetService("UserInputService")
-	local RunService = game:GetService("RunService")
-	local localPlayer = Players.LocalPlayer
-	local camera = game:GetService("Workspace").CurrentCamera
-	local lockOnActive = false
-	local teamCheckActive = false
-	local currentTouch = nil
-	local fovRadius = 125
-	local screenGui = Instance.new("ScreenGui")
-	screenGui.Parent = game:GetService("CoreGui")
-	local toggleButton = Instance.new("TextButton")
-	toggleButton.Parent = screenGui
-	toggleButton.Size = UDim2.new(0, 150, 0, 50)
-	toggleButton.Position = UDim2.new(0, 100, 0, 100)
-	toggleButton.Text = "Toggle Lock-On"
-	toggleButton.Draggable = true
-	local toggleTeamButton = Instance.new("TextButton")
-	toggleTeamButton.Parent = screenGui
-	toggleTeamButton.Size = UDim2.new(0, 150, 0, 50)
-	toggleTeamButton.Position = UDim2.new(0, 100, 0, 160)
-	toggleTeamButton.Text = "Toggle Team Check"
-	toggleTeamButton.Draggable = true
-	local fovCircleGui = Instance.new("ImageLabel")
-	fovCircleGui.Parent = screenGui
-	fovCircleGui.AnchorPoint = Vector2.new(0.5, 0.5)
-	fovCircleGui.Size = UDim2.new(0, fovRadius * 2, 0, fovRadius * 2)
-	fovCircleGui.Image = "rbxassetid://432312433"
-	fovCircleGui.ImageTransparency = 0.5
-	fovCircleGui.ImageColor3 = Color3.new(1, 1, 1)
-	fovCircleGui.BackgroundTransparency = 1
-	fovCircleGui.Visible = false
-	fovCircleGui.ZIndex = 0
-	local function isPlayerVisible(targetPlayer)
-		if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("Head") then
-			return false
-		end
-		if teamCheckActive and targetPlayer.Team == localPlayer.Team then
-			return false
-		end
-		local targetHeadPosition = targetPlayer.Character.Head.Position
-		local vectorToTarget = (targetHeadPosition - camera.CFrame.Position).unit
-		local ray = Ray.new(camera.CFrame.Position, vectorToTarget * fovRadius)
-		local part, position = game:GetService("Workspace"):FindPartOnRay(ray, localPlayer.Character, false, true)
-		if part and part:IsDescendantOf(targetPlayer.Character) then
-			local dotProduct = camera.CFrame.LookVector:Dot(vectorToTarget)
-			local angle = math.deg(math.acos(dotProduct))
-			return angle <= (fovRadius / 2)
-		end
-		return false
-	end
-	toggleButton.MouseButton1Click:Connect(function()
-		lockOnActive = not lockOnActive
-		toggleButton.Text = lockOnActive and "Lock-On Active" or "Toggle Lock-On"
-		fovCircleGui.Visible = lockOnActive
-	end)
-	toggleTeamButton.MouseButton1Click:Connect(function()
-		teamCheckActive = not teamCheckActive
-		toggleTeamButton.Text = teamCheckActive and "Team Check Active" or "Toggle Team Check"
-	end)
-	local function onTouchStarted(touch)
-		currentTouch = touch.Position
-		fovCircleGui.Position = UDim2.new(0, touch.Position.X - fovRadius, 0, touch.Position.Y - fovRadius)
-		fovCircleGui.Visible = true
-	end
-	local function onTouchEnded(touch)
-		if currentTouch and currentTouch == touch.Position then
-			currentTouch = nil
-			fovCircleGui.Visible = false
-		end
-	end
-	UserInputService.TouchStarted:Connect(onTouchStarted)
-	UserInputService.TouchEnded:Connect(onTouchEnded)
-	RunService.RenderStepped:Connect(function()
-		if lockOnActive then
-			for _, player in ipairs(Players:GetPlayers()) do
-				if player ~= localPlayer and isPlayerVisible(player) then
-					local head = player.Character.Head
-					local direction = (head.Position - camera.CFrame.Position).unit
-					camera.CFrame = CFrame.new(camera.CFrame.Position, camera.CFrame.Position + direction * 10)
-					break
-				end
-			end
-		end
-	end)
-   end,
-})
-
-Rayfield:LoadConfiguration()

@@ -13,7 +13,7 @@ local CoreGui = game:GetService("CoreGui")
 local player = Players.LocalPlayer
 
 -- ========== CONFIG ==========
-local Keys = {"superior1", "ad35v", "3islifetime"}
+local Keys = {"ad35v"}
 local KeyVersion = 2
 local DiscordLink = "https://discord.gg/ZE6vyxgydK"
 local KeyFileName = "SheitsaHubV2_Key.txt"

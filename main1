@@ -405,6 +405,10 @@ function loadHub()
     -- ==========================================
     --  GAMES TAB (flat list, alphabetical, search)
     -- ==========================================
+    Tabs.Games:AddParagraph({
+        Title = "💡 Tip",
+        Content = "Use the search bar on the left to quickly find any game by name!"
+    })
 
     Tabs.Games:AddButton({
         Title = "Arise Crossover (OP) | NEW",
@@ -455,7 +459,7 @@ function loadHub()
         Title = "LUCKY BLOCK Battlegrounds",
         Description = "Script for LUCKY BLOCK Battlegrounds.",
         Callback = function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/idkevenknowburh/c/refs/heads/main/d", true))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/idkevenknowburh/luckyblockbattlegrounds/refs/heads/main/lucky", true))()
             Fluent:Notify({ Title = "Games", Content = "Loaded: LUCKY BLOCK Battlegrounds", Duration = 3 })
         end
     })
@@ -550,6 +554,7 @@ function loadHub()
         Min = 0,
         Max = 200,
         Default = 16,
+        Flag = "WalkSpeed",
         Callback = function(Value)
             local char = player.Character
             if char and char:FindFirstChild("Humanoid") then
@@ -564,6 +569,7 @@ function loadHub()
         Min = 0,
         Max = 300,
         Default = 50,
+        Flag = "JumpPower",
         Callback = function(Value)
             local char = player.Character
             if char and char:FindFirstChild("Humanoid") then
@@ -576,6 +582,7 @@ function loadHub()
         Title = "Infinite Jump",
         Description = "Jump endlessly mid-air.",
         Default = false,
+        Flag = "InfiniteJump",
         Callback = function(Value)
             if Value then
                 infiniteJumpConn = UIS.JumpRequest:Connect(function()
@@ -599,6 +606,7 @@ function loadHub()
         Title = "NoClip",
         Description = "Walk through walls. Toggle off to re-enable collision.",
         Default = false,
+        Flag = "NoClip",
         Callback = function(Value)
             if Value then
                 noclipConn = RunService.Stepped:Connect(function()
@@ -633,6 +641,7 @@ function loadHub()
         Title = "Fly",
         Description = "WASD + Space/Shift to fly. Toggle off to land.",
         Default = false,
+        Flag = "Fly",
         Callback = function(Value)
             if Value then
                 local char = player.Character
@@ -687,6 +696,7 @@ function loadHub()
         Min = 10,
         Max = 200,
         Default = 50,
+        Flag = "FlySpeed",
         Callback = function(Value)
             flySpeed = Value
         end
@@ -848,8 +858,6 @@ function loadHub()
         Content = "@Sheitsa  [OWNER] [HEAD DEV]\n@boxyy._  [SCRIPT DEV]\n@nomorecoder  [SCRIPT DEV]"
     })
 
-    Tabs.Credits:AddSection("")
-
     -- Section 2: UI Library Credit
     Tabs.Credits:AddParagraph({
         Title = "UI Library",
@@ -864,6 +872,58 @@ function loadHub()
         Content = "Hub loaded! Press RightControl to minimize.",
         Duration = 5
     })
+
+    -- ==========================================
+    --  HUB TOGGLE BUTTON (black & white, square)
+    -- ==========================================
+    local toggleGui = Instance.new("ScreenGui")
+    toggleGui.Name = "SheitsaHubToggle"
+    toggleGui.ResetOnSpawn = false
+    toggleGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    toggleGui.Parent = CoreGui
+
+    local hubVisible = true
+
+    local function getFluentGui()
+        for _, child in ipairs(CoreGui:GetChildren()) do
+            if child:IsA("ScreenGui") and child.Name ~= "SheitsaHubToggle" and child.Name ~= "SheitsaKeySystem" then
+                return child
+            end
+        end
+        return nil
+    end
+
+    local hubToggle = Instance.new("TextButton")
+    hubToggle.Size = UDim2.new(0, 44, 0, 44)
+    hubToggle.Position = UDim2.new(0, 18, 1, -62)
+    hubToggle.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+    hubToggle.Text = ""
+    hubToggle.BorderSizePixel = 0
+    hubToggle.AutoButtonColor = false
+    hubToggle.Parent = toggleGui
+
+    Instance.new("UICorner", hubToggle).CornerRadius = UDim.new(0, 11)
+
+    local tStroke = Instance.new("UIStroke", hubToggle)
+    tStroke.Color = Color3.fromRGB(190, 190, 200)
+    tStroke.Thickness = 1.5
+
+    local tIcon = Instance.new("TextLabel", hubToggle)
+    tIcon.Size = UDim2.new(1, 0, 1, 0)
+    tIcon.Text = "S2"
+    tIcon.TextSize = 14
+    tIcon.BackgroundTransparency = 1
+    tIcon.TextColor3 = Color3.fromRGB(200, 200, 210)
+    tIcon.Font = Enum.Font.GothamBold
+
+    hubToggle.MouseButton1Click:Connect(function()
+        hubVisible = not hubVisible
+        local fGui = getFluentGui()
+        if fGui then fGui.Enabled = hubVisible end
+        tIcon.Text = hubVisible and "S2" or "—"
+        tStroke.Color = hubVisible and Color3.fromRGB(190, 190, 200) or Color3.fromRGB(80, 80, 90)
+        hubToggle.BackgroundColor3 = hubVisible and Color3.fromRGB(12, 12, 16) or Color3.fromRGB(30, 30, 36)
+    end)
 end
 
 -- ========== STARTUP ==========

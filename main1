@@ -13,9 +13,11 @@ local CoreGui = game:GetService("CoreGui")
 local player = Players.LocalPlayer
 
 -- ========== CONFIG ==========
-local Keys = {"cope"}
+local Keys = {"superior1", "ad35v", "3islifetime"}
+local KeyVersion = 2
 local DiscordLink = "https://discord.gg/ZE6vyxgydK"
 local KeyFileName = "SheitsaHubV2_Key.txt"
+local KeyVerFileName = "SheitsaHubV2_KeyVer.txt"
 
 -- Player feature connections
 local infiniteJumpConn = nil
@@ -35,11 +37,20 @@ end
 
 local function getSavedKey()
     local ok, key = pcall(readfile, KeyFileName)
-    return ok and key or nil
+    if not ok then return nil end
+    -- Check if key version matches — if you changed keys, force re-auth
+    local ok2, ver = pcall(readfile, KeyVerFileName)
+    if not ok2 or tonumber(ver) ~= KeyVersion then
+        pcall(delfile, KeyFileName)
+        pcall(delfile, KeyVerFileName)
+        return nil
+    end
+    return key
 end
 
 local function saveKey(key)
     pcall(writefile, KeyFileName, key)
+    pcall(writefile, KeyVerFileName, tostring(KeyVersion))
 end
 
 -- ========== AMOLED THEME COLORS ==========
@@ -141,19 +152,18 @@ local function showKeySystem()
 
     -- Caption (easy key info)
     local caption = Instance.new("TextLabel", content)
-    caption.Size = UDim2.new(1, 0, 0, 50)
+    caption.Size = UDim2.new(1, 0, 0, 68)
     caption.BackgroundTransparency = 1
-    caption.TextColor3 = C.Warn; caption.TextSize = 12.5
-    caption.Font = Enum.Font.GothamMedium
+    caption.TextColor3 = C.Warn; caption.TextSize = 13.5
+    caption.Font = Enum.Font.GothamSemibold
     caption.TextWrapped = true; caption.TextXAlignment = Enum.TextXAlignment.Left
-    caption.Text = "🔑 The key is super easy to get! Just press the \"Get Key\" button below, join our Discord, go to the #key channel — the key is right there. That's it, so simple!"
+    caption.Text = "🔑 The key is super easy to get!\nJust press the \"Get Key\" button below, join our Discord, go to the #key channel — the key is right there. That's it, so simple!"
 
     -- Key Textbox
     local box = Instance.new("TextBox", content)
     box.PlaceholderText = "  Enter your key here..."
-    local savedKey = getSavedKey()
-    box.Text = savedKey or ""
-    box.Size = UDim2.new(1, 0, 0, 44); box.Position = UDim2.new(0, 0, 0, 58)
+    box.Text = ""
+    box.Size = UDim2.new(1, 0, 0, 44); box.Position = UDim2.new(0, 0, 0, 76)
     box.BackgroundColor3 = Color3.fromRGB(8, 8, 12)
     box.TextColor3 = C.Text; box.PlaceholderColor3 = Color3.fromRGB(70, 70, 85)
     box.TextSize = 14; box.Font = Enum.Font.Gotham
@@ -164,7 +174,7 @@ local function showKeySystem()
 
     -- Button Row
     local btnRow = Instance.new("Frame", content)
-    btnRow.Size = UDim2.new(1, 0, 0, 42); btnRow.Position = UDim2.new(0, 0, 0, 116)
+    btnRow.Size = UDim2.new(1, 0, 0, 42); btnRow.Position = UDim2.new(0, 0, 0, 128)
     btnRow.BackgroundTransparency = 1
 
     -- Get Key Button
@@ -191,7 +201,7 @@ local function showKeySystem()
     -- Status Label
     local status = Instance.new("TextLabel", content)
     status.Text = ""; status.Size = UDim2.new(1, 0, 0, 22)
-    status.Position = UDim2.new(0, 0, 0, 170)
+    status.Position = UDim2.new(0, 0, 0, 182)
     status.BackgroundTransparency = 1
     status.TextColor3 = C.Error; status.TextSize = 12
     status.Font = Enum.Font.GothamMedium; status.TextXAlignment = Enum.TextXAlignment.Left
@@ -202,7 +212,7 @@ local function showKeySystem()
     toggleFrame.Position = UDim2.new(0, 20, 1, -56)
     toggleFrame.BackgroundColor3 = C.ToggleOff
     toggleFrame.BorderSizePixel = 0
-    toggleFrame.Visible = false; toggleFrame.AutoButtonColor = false
+    toggleFrame.Visible = false
     Instance.new("UICorner", toggleFrame).CornerRadius = UDim.new(0, 14)
     toggleFrame.Parent = screen
 

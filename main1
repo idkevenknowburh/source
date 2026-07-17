@@ -151,7 +151,8 @@ local function showKeySystem()
     -- Key Textbox
     local box = Instance.new("TextBox", content)
     box.PlaceholderText = "  Enter your key here..."
-    box.Text = ""
+    local savedKey = getSavedKey()
+    box.Text = savedKey or ""
     box.Size = UDim2.new(1, 0, 0, 44); box.Position = UDim2.new(0, 0, 0, 58)
     box.BackgroundColor3 = Color3.fromRGB(8, 8, 12)
     box.TextColor3 = C.Text; box.PlaceholderColor3 = Color3.fromRGB(70, 70, 85)
@@ -353,6 +354,319 @@ local function showKeySystem()
     box.FocusLost:Connect(function(enter) if enter then submitKey() end end)
 end
 
+-- ========== LUCKY BLOCK BATTLEGROUNDSSCRIPT (inlined) ==========
+function loadLuckyBlockScript()
+    local Players = game:GetService("Players")
+    local UIS = game:GetService("UserInputService")
+    local TweenService = game:GetService("TweenService")
+    local RunService = game:GetService("RunService")
+    local RS = game:GetService("ReplicatedStorage")
+    local player = Players.LocalPlayer
+
+    local Blocks = {
+        Lucky   = RS:WaitForChild("SpawnLuckyBlock"),
+        Super   = RS:WaitForChild("SpawnSuperBlock"),
+        Diamond = RS:WaitForChild("SpawnDiamondBlock"),
+        Rainbow = RS:WaitForChild("SpawnRainbowBlock"),
+        Galaxy  = RS:WaitForChild("SpawnGalaxyBlock"),
+    }
+
+    local C = {
+        BG            = Color3.fromRGB(10, 10, 14),
+        Card          = Color3.fromRGB(18, 18, 24),
+        Header        = Color3.fromRGB(14, 14, 19),
+        Text          = Color3.fromRGB(228, 228, 236),
+        Sub           = Color3.fromRGB(115, 115, 132),
+        Accent        = Color3.fromRGB(85, 205, 125),
+        AccentHover   = Color3.fromRGB(100, 220, 140),
+        Border        = Color3.fromRGB(28, 28, 38),
+        Close         = Color3.fromRGB(185, 48, 48),
+        CloseHover    = Color3.fromRGB(210, 65, 65),
+        Discord       = Color3.fromRGB(88, 101, 242),
+        DiscordHover  = Color3.fromRGB(102, 115, 255),
+        TabOn         = Color3.fromRGB(85, 205, 125),
+        TabOff        = Color3.fromRGB(38, 38, 50),
+        SectionLabel  = Color3.fromRGB(255, 95, 65),
+        InputBG       = Color3.fromRGB(8, 8, 12),
+        DDHover       = Color3.fromRGB(24, 24, 32),
+        DDBg          = Color3.fromRGB(14, 14, 20),
+        ToggleOn      = Color3.fromRGB(85, 205, 125),
+        ToggleOff     = Color3.fromRGB(38, 38, 50),
+        Black         = Color3.fromRGB(5, 5, 5),
+    }
+
+    local noclipConn = nil
+
+    local function new(class, props, parent)
+        local inst = Instance.new(class)
+        for k, v in pairs(props) do inst[k] = v end
+        if parent then inst.Parent = parent end
+        return inst
+    end
+    local function corner(inst, r) return new("UICorner", {CornerRadius = UDim.new(0, r or 10)}, inst) end
+    local function stroke(inst, c, t) return new("UIStroke", {Color = c or C.Border, Thickness = t or 1}, inst) end
+    local function tw(inst, props, dur, style, dir)
+        TweenService:Create(inst, TweenInfo.new(dur or 0.3, style or Enum.EasingStyle.Quad, dir or Enum.EasingDirection.Out), props):Play()
+    end
+
+    local gui = new("ScreenGui", { Name = "LBB_SheitsaHub", ResetOnSpawn = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, game:GetService("CoreGui"))
+
+    local main = new("Frame", {
+        Name = "Main", Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, -172, 0.5, -210),
+        BackgroundColor3 = C.BG, BackgroundTransparency = 0.03, BorderSizePixel = 0,
+    }, gui)
+    corner(main, 14); stroke(main)
+
+    task.defer(function()
+        tw(main, {Size = UDim2.new(0, 344, 0, 420)}, 0.55, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+    end)
+
+    local header = new("Frame", { Size = UDim2.new(1, 0, 0, 48), BackgroundColor3 = C.Header, BorderSizePixel = 0 }, main)
+    corner(header, 14)
+    new("Frame", {Size = UDim2.new(1, 0, 0, 14), Position = UDim2.new(0, 0, 1, -14), BackgroundColor3 = C.Header, BorderSizePixel = 0}, header)
+
+    new("TextLabel", {
+        Text = "LUCKY BLOCK Battlegrounds", Size = UDim2.new(1, -76, 0.48, 0), Position = UDim2.new(0, 14, 0, 0),
+        BackgroundTransparency = 1, TextColor3 = C.Text, TextSize = 13.5,
+        Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd,
+    }, header)
+    new("TextLabel", {
+        Text = "Sheitsa Hub V2", Size = UDim2.new(1, -76, 0.44, 0), Position = UDim2.new(0, 14, 0.52, 0),
+        BackgroundTransparency = 1, TextColor3 = C.Sub, TextSize = 10,
+        Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left,
+    }, header)
+
+    local closeBtn = new("TextButton", {
+        Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(1, -38, 0, 9),
+        BackgroundColor3 = C.Close, Text = "✕", TextColor3 = Color3.new(1,1,1),
+        TextSize = 13, Font = Enum.Font.GothamBold, BorderSizePixel = 0, AutoButtonColor = false,
+    }, header)
+    corner(closeBtn, 8)
+    closeBtn.MouseButton1Click:Connect(function()
+        tw(main, {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}, 0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+        task.delay(0.3, function() gui:Destroy() end)
+    end)
+    closeBtn.MouseEnter:Connect(function() tw(closeBtn, {BackgroundColor3 = C.CloseHover}, 0.15) end)
+    closeBtn.MouseLeave:Connect(function() tw(closeBtn, {BackgroundColor3 = C.Close}, 0.15) end)
+
+    -- Tabs
+    local tabNav = new("Frame", { Size = UDim2.new(1, 0, 0, 38), Position = UDim2.new(0, 0, 0, 48), BackgroundColor3 = Color3.fromRGB(12, 12, 17), BorderSizePixel = 0 }, main)
+    new("Frame", {Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 1, -1), BackgroundColor3 = C.Border, BorderSizePixel = 0}, tabNav)
+
+    local tabNames = {"Lucky Blocks", "Universal", "Credits"}
+    local tabButtons = {}
+    local tabCount = #tabNames
+
+    for i, name in ipairs(tabNames) do
+        local isActive = (i == 1)
+        local btn = new("TextButton", {
+            Size = UDim2.new(1 / tabCount, 0, 1, 0), Position = UDim2.new((i - 1) / tabCount, 0, 0, 0),
+            BackgroundColor3 = isActive and C.TabOn or C.TabOff, Text = name,
+            TextColor3 = isActive and C.Black or C.Sub, TextSize = 11.5,
+            Font = Enum.Font.GothamSemibold, BorderSizePixel = 0, AutoButtonColor = false,
+        }, tabNav)
+        if isActive then
+            new("Frame", { Size = UDim2.new(0.5, 0, 0, 2), Position = UDim2.new(0.25, 0, 1, -2), BackgroundColor3 = C.Black, BorderSizePixel = 0 }, btn)
+        end
+        tabButtons[name] = btn
+    end
+
+    local contentArea = new("Frame", {
+        Size = UDim2.new(1, -20, 1, -96), Position = UDim2.new(0, 10, 0, 92),
+        BackgroundTransparency = 1, ClipsDescendants = true,
+    }, main)
+
+    local tabFrames = {}
+    for _, name in ipairs(tabNames) do
+        local scroll = new("ScrollingFrame", {
+            Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, BorderSizePixel = 0,
+            ScrollBarThickness = 3, ScrollBarImageColor3 = Color3.fromRGB(45, 45, 58),
+            CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y,
+            Visible = (name == "Lucky Blocks"),
+        }, contentArea)
+        new("UIPadding", {PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 10), PaddingLeft = UDim.new(0, 2), PaddingRight = UDim.new(0, 2)}, scroll)
+        new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8)}, scroll)
+        tabFrames[name] = scroll
+    end
+
+    local function makeSection(parent, text, order)
+        new("TextLabel", {
+            Text = text, Size = UDim2.new(1, 0, 0, 20), BackgroundTransparency = 1,
+            TextColor3 = C.SectionLabel, TextSize = 11.5, Font = Enum.Font.GothamBold,
+            TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = order or 0,
+        }, parent)
+    end
+
+    local function makeDropdown(parent, label, options, default, order)
+        local wrap = new("Frame", { Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, AutomaticSize = Enum.AutomaticSize.Y, LayoutOrder = order or 0 }, parent)
+        new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4)}, wrap)
+        new("TextLabel", { Text = label, Size = UDim2.new(1, 0, 0, 16), BackgroundTransparency = 1, TextColor3 = C.Sub, TextSize = 11, Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left }, wrap)
+
+        local selected = default or options[1]
+        local isOpen = false
+        local selectBtn = new("TextButton", {
+            Size = UDim2.new(1, 0, 0, 34), BackgroundColor3 = C.InputBG,
+            Text = "  ▾  " .. selected, TextColor3 = C.Text, TextSize = 12, Font = Enum.Font.Gotham,
+            BorderSizePixel = 0, TextXAlignment = Enum.TextXAlignment.Left, AutoButtonColor = false,
+        }, wrap)
+        corner(selectBtn, 8); stroke(selectBtn)
+
+        local listFrame = new("Frame", { Size = UDim2.new(1, 0, 0, 0), BackgroundColor3 = C.DDBg, BorderSizePixel = 0, ClipsDescendants = true }, wrap)
+        corner(listFrame, 8); stroke(listFrame)
+        new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder}, listFrame)
+
+        for i, opt in ipairs(options) do
+            local oBtn = new("TextButton", {
+                Size = UDim2.new(1, 0, 0, 30), BackgroundColor3 = C.DDBg,
+                Text = "   " .. opt, TextColor3 = C.Text, TextSize = 12, Font = Enum.Font.Gotham,
+                BorderSizePixel = 0, TextXAlignment = Enum.TextXAlignment.Left, AutoButtonColor = false, LayoutOrder = i,
+            }, listFrame)
+            oBtn.MouseEnter:Connect(function() oBtn.BackgroundColor3 = C.DDHover end)
+            oBtn.MouseLeave:Connect(function() oBtn.BackgroundColor3 = C.DDBg end)
+            oBtn.MouseButton1Click:Connect(function()
+                selected = opt; selectBtn.Text = "  ▾  " .. opt; isOpen = false
+                tw(listFrame, {Size = UDim2.new(1, 0, 0, 0)}, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+            end)
+        end
+        selectBtn.MouseButton1Click:Connect(function()
+            isOpen = not isOpen
+            tw(listFrame, {Size = UDim2.new(1, 0, 0, isOpen and (#options * 30) or 0)}, 0.2)
+        end)
+        return { Get = function() return selected end }
+    end
+
+    local function makeButton(parent, text, bgColor, hoverColor, order, cb)
+        local btn = new("TextButton", {
+            Size = UDim2.new(1, 0, 0, 38), BackgroundColor3 = bgColor, Text = text,
+            TextColor3 = C.Black, TextSize = 13, Font = Enum.Font.GothamSemibold,
+            BorderSizePixel = 0, AutoButtonColor = false, LayoutOrder = order or 0,
+        }, parent)
+        corner(btn, 9)
+        btn.MouseEnter:Connect(function() tw(btn, {BackgroundColor3 = hoverColor}, 0.15) end)
+        btn.MouseLeave:Connect(function() tw(btn, {BackgroundColor3 = bgColor}, 0.15) end)
+        if cb then btn.MouseButton1Click:Connect(cb) end
+        return btn
+    end
+
+    local function makeInputRow(parent, labelText, defaultVal, btnText, order, callback)
+        local wrap = new("Frame", { Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, AutomaticSize = Enum.AutomaticSize.Y, LayoutOrder = order or 0 }, parent)
+        new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4)}, wrap)
+        new("TextLabel", { Text = labelText, Size = UDim2.new(1, 0, 0, 16), BackgroundTransparency = 1, TextColor3 = C.Sub, TextSize = 11, Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left }, wrap)
+        local row = new("Frame", { Size = UDim2.new(1, 0, 0, 36), BackgroundTransparency = 1 }, wrap)
+        new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6), FillDirection = Enum.FillDirection.Horizontal}, row)
+        local input = new("TextBox", {
+            Size = UDim2.new(1, -100, 1, 0), BackgroundColor3 = C.InputBG, Text = defaultVal or "",
+            TextColor3 = C.Text, PlaceholderText = "Enter value...", PlaceholderColor3 = Color3.fromRGB(65, 65, 80),
+            TextSize = 13, Font = Enum.Font.Gotham, BorderSizePixel = 0,
+        }, row)
+        corner(input, 8); stroke(input)
+        makeButton(row, btnText, C.Accent, C.AccentHover, 0, function()
+            local v = tonumber(input.Text)
+            if v then callback(v) end
+        end)
+        return input
+    end
+
+    -- TAB 1: LUCKY BLOCKS
+    local lbTab = tabFrames["Lucky Blocks"]
+    makeSection(lbTab, "— Spawn Blocks", 0)
+    local blockDD = makeDropdown(lbTab, "Select Block Type", {"Lucky Block", "Super Block", "Diamond Block"}, "Lucky Block", 1)
+    makeButton(lbTab, "Spawn Block", C.Accent, C.AccentHover, 2, function()
+        local map = { ["Lucky Block"] = Blocks.Lucky, ["Super Block"] = Blocks.Super, ["Diamond Block"] = Blocks.Diamond }
+        local remote = map[blockDD.Get()]
+        if remote then remote:FireServer() end
+    end)
+    new("Frame", {Size = UDim2.new(1, 0, 0, 8), BackgroundTransparency = 1, LayoutOrder = 3}, lbTab)
+    makeSection(lbTab, "— VERY OP (Gamepass Blocks)", 4)
+    local gpDD = makeDropdown(lbTab, "Select Gamepass Block", {"Rainbow Lucky Block", "Galaxy Lucky Block"}, "Rainbow Lucky Block", 5)
+    makeButton(lbTab, "Spawn Gamepass Block", C.SectionLabel, Color3.fromRGB(255, 115, 85), 6, function()
+        local map = { ["Rainbow Lucky Block"] = Blocks.Rainbow, ["Galaxy Lucky Block"] = Blocks.Galaxy }
+        local remote = map[gpDD.Get()]
+        if remote then remote:FireServer() end
+    end)
+
+    -- TAB 2: UNIVERSAL
+    local uniTab = tabFrames["Universal"]
+    makeSection(uniTab, "— Movement", 0)
+    makeInputRow(uniTab, "WalkSpeed", "50", "Set", 1, function(v)
+        if player.Character and player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.WalkSpeed = v end
+    end)
+    makeInputRow(uniTab, "JumpPower", "100", "Set", 2, function(v)
+        if player.Character and player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.JumpPower = v end
+    end)
+
+    makeSection(uniTab, "— Physics", 3)
+    local noclipOn = false
+    local noclipBtn = new("TextButton", {
+        Size = UDim2.new(1, 0, 0, 38), BackgroundColor3 = C.ToggleOff,
+        Text = "  NoClip: OFF", TextColor3 = C.Sub, TextSize = 13,
+        Font = Enum.Font.GothamSemibold, BorderSizePixel = 0, AutoButtonColor = false, LayoutOrder = 4,
+    }, uniTab)
+    corner(noclipBtn, 9); stroke(noclipBtn)
+    noclipBtn.MouseButton1Click:Connect(function()
+        noclipOn = not noclipOn
+        if noclipOn then
+            noclipBtn.Text = "  NoClip: ON"; noclipBtn.BackgroundColor3 = C.ToggleOn; noclipBtn.TextColor3 = C.Black
+            noclipConn = RunService.Stepped:Connect(function()
+                if player.Character then for _, p in ipairs(player.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end end
+            end)
+        else
+            noclipBtn.Text = "  NoClip: OFF"; noclipBtn.BackgroundColor3 = C.ToggleOff; noclipBtn.TextColor3 = C.Sub
+            if noclipConn then noclipConn:Disconnect(); noclipConn = nil end
+            if player.Character then for _, p in ipairs(player.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = true end end end
+        end
+    end)
+
+    makeSection(uniTab, "— Tools", 5)
+    local adminBtn = makeButton(uniTab, "Get Admin (Infinite Yield)", C.Discord, C.DiscordHover, 6, function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source", true))()
+    end)
+    adminBtn.TextColor3 = Color3.new(1, 1, 1)
+
+    -- TAB 3: CREDITS
+    local crTab = tabFrames["Credits"]
+    new("TextLabel", { Text = "LUCKY BLOCK Battlegrounds", Size = UDim2.new(1, 0, 0, 26), BackgroundTransparency = 1, TextColor3 = C.Text, TextSize = 16, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = 0 }, crTab)
+    new("TextLabel", { Text = "Sheitsa Hub V2", Size = UDim2.new(1, 0, 0, 20), BackgroundTransparency = 1, TextColor3 = C.Accent, TextSize = 13, Font = Enum.Font.GothamSemibold, TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = 1 }, crTab)
+    new("Frame", {Size = UDim2.new(1, 0, 0, 1), BackgroundColor3 = C.Border, BorderSizePixel = 0, LayoutOrder = 2}, crTab)
+    new("TextLabel", { Text = "Script made by the Sheitsa Dev Team.", Size = UDim2.new(1, 0, 0, 20), BackgroundTransparency = 1, TextColor3 = C.Sub, TextSize = 12, Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = 3 }, crTab)
+    new("TextLabel", { Text = "All credits go to Sheitsa Dev Team\nfor creating this script.", Size = UDim2.new(1, 0, 0, 36), BackgroundTransparency = 1, TextColor3 = C.Sub, TextSize = 11.5, Font = Enum.Font.Gotham, TextXAlignment = Enum.TextXAlignment.Left, TextWrapped = true, LayoutOrder = 4 }, crTab)
+    new("Frame", {Size = UDim2.new(1, 0, 0, 12), BackgroundTransparency = 1, LayoutOrder = 5}, crTab)
+    local discBtn = makeButton(crTab, "Join our Discord", C.Discord, C.DiscordHover, 6, function()
+        pcall(setclipboard, DiscordLink)
+        discBtn.Text = "✓  Link Copied!"
+        task.delay(2, function() discBtn.Text = "Join our Discord" end)
+    end)
+    discBtn.TextColor3 = Color3.new(1, 1, 1)
+
+    -- Tab switching
+    local function switchTab(name)
+        for n, frame in pairs(tabFrames) do frame.Visible = (n == name) end
+        for n, btn in pairs(tabButtons) do
+            local active = (n == name)
+            btn.BackgroundColor3 = active and C.TabOn or C.TabOff
+            btn.TextColor3 = active and C.Black or C.Sub
+        end
+    end
+    for name, btn in pairs(tabButtons) do btn.MouseButton1Click:Connect(function() switchTab(name) end) end
+
+    -- Drag
+    local dragging, dragStart, startPos
+    header.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true; dragStart = input.Position; startPos = main.Position
+        end
+    end)
+    header.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end
+    end)
+    UIS.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local d = input.Position - dragStart
+            main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+        end
+    end)
+end
+
 -- ========== MAIN HUB (Fluent-Modded) ==========
 function loadHub()
     local Fluent = loadstring(game:HttpGet("https://github.com/StyearX/Fluent-Modded/releases/download/Fluent/FluentPro"))()
@@ -459,8 +773,8 @@ function loadHub()
         Title = "LUCKY BLOCK Battlegrounds",
         Description = "Script for LUCKY BLOCK Battlegrounds.",
         Callback = function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/idkevenknowburh/luckyblockbattlegrounds/refs/heads/main/lucky", true))()
             Fluent:Notify({ Title = "Games", Content = "Loaded: LUCKY BLOCK Battlegrounds", Duration = 3 })
+            loadLuckyBlockScript()
         end
     })
 
@@ -926,10 +1240,5 @@ function loadHub()
     end)
 end
 
--- ========== STARTUP ==========
-local saved = getSavedKey()
-if saved and isValidKey(saved) then
-    loadHub()
-else
-    showKeySystem()
-end
+-- ========== STARTUP (key system ALWAYS shows first) ==========
+showKeySystem()

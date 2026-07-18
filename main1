@@ -73,7 +73,7 @@ local C = {
 }
 
 -- ========== KEY SYSTEM GUI ==========
-local function showKeySystem()
+local function showKeySystem(autoAuth)
     local screen = Instance.new("ScreenGui")
     screen.Name = "SheitsaKeySystem"
     screen.ResetOnSpawn = false
@@ -338,6 +338,25 @@ local function showKeySystem()
         TweenService:Create(backdrop, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
         task.delay(0.3, function() screen:Destroy() end)
     end)
+
+    -- ========== AUTO-AUTH (saved key) ==========
+    if autoAuth then
+        status.Text = "✓  Saved key found! Authenticating..."
+        status.TextColor3 = C.Accent
+        submitBtn.Text = "✓  Valid!"
+        submitBtn.BackgroundColor3 = Color3.fromRGB(50, 170, 90)
+        task.delay(1.2, function()
+            status.Text = "✓  Authenticated! Loading hub..."
+            task.delay(0.6, function()
+                TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
+                TweenService:Create(backdrop, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+                task.delay(0.5, function()
+                    screen:Destroy()
+                    loadHub()
+                end)
+            end)
+        end)
+    end
 
     -- ========== GET KEY ==========
     getKeyBtn.MouseButton1Click:Connect(function()
@@ -1402,8 +1421,4 @@ end
 
 -- ========== STARTUP ==========
 local saved = getSavedKey()
-if saved and isValidKey(saved) then
-    loadHub()
-else
-    showKeySystem()
-end
+showKeySystem(saved ~= nil and isValidKey(saved))

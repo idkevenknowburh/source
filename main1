@@ -816,7 +816,7 @@ function loadHub()
         Description = "Updated script for Legends of Speed.",
         Flag = "GamesLegendsOfSpeed",
         Callback = function()
-            loadLegendsOfSpeedScript()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/idkevenknowburh/legends-of-speed/refs/heads/main/script"))()
             Fluent:Notify({ Title = "Games", Content = "Loaded: Legends of Speed", Duration = 3 })
         end
     })
@@ -826,8 +826,8 @@ function loadHub()
         Description = "Script for LUCKY BLOCK Battlegrounds.",
         Flag = "GamesLBB",
         Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/idkevenknowburh/luckyblockbattlegrounds/refs/heads/main/lucky"))()
             Fluent:Notify({ Title = "Games", Content = "Loaded: LUCKY BLOCK Battlegrounds", Duration = 3 })
-            loadLuckyBlockScript()
         end
     })
 

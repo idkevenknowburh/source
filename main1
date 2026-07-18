@@ -209,7 +209,7 @@ local function showKeySystem()
     -- ========== MODERN MINIMIZE TOGGLE ==========
     local toggleFrame = Instance.new("Frame")
     toggleFrame.Size = UDim2.new(0, 52, 0, 28)
-    toggleFrame.Position = UDim2.new(0, 20, 1, -56)
+    toggleFrame.Position = UDim2.new(0.5, -26, 0, 14)
     toggleFrame.BackgroundColor3 = C.ToggleOff
     toggleFrame.BorderSizePixel = 0
     toggleFrame.Visible = false
@@ -285,32 +285,51 @@ local function showKeySystem()
 
     minBtn.MouseButton1Click:Connect(doMinimize)
 
-    toggleInput.MouseButton1Click:Connect(function()
-        -- Animate toggle visually
-        TweenService:Create(toggleDot, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Position = UDim2.new(1, -25, 0.5, -11),
-            BackgroundColor3 = C.ToggleOn
-        }):Play()
-        TweenService:Create(toggleFrame, TweenInfo.new(0.25), {
-            BackgroundColor3 = Color3.fromRGB(20, 60, 35)
-        }):Play()
-        TweenService:Create(toggleStroke, TweenInfo.new(0.25), {
-            Color = C.ToggleOn
-        }):Play()
-        task.delay(0.15, function()
-            doRestore()
-            -- Reset toggle visual after restore
-            TweenService:Create(toggleDot, TweenInfo.new(0.2), {
-                Position = UDim2.new(0, 3, 0.5, -11),
-                BackgroundColor3 = C.TextSub
-            }):Play()
-            TweenService:Create(toggleFrame, TweenInfo.new(0.2), {
-                BackgroundColor3 = C.ToggleOff
-            }):Play()
-            TweenService:Create(toggleStroke, TweenInfo.new(0.2), {
-                Color = C.Accent
-            }):Play()
-        end)
+    -- Drag + Click for key toggle (replaces old toggleInput.MouseButton1Click)
+    local ktDragging, ktDragStart, ktStartPos, ktDidDrag
+    toggleInput.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            ktDragging = true; ktDidDrag = false
+            ktDragStart = input.Position; ktStartPos = toggleFrame.Position
+        end
+    end)
+    toggleInput.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if not ktDidDrag then
+                -- Original click behavior: restore the key system
+                TweenService:Create(toggleDot, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    Position = UDim2.new(1, -25, 0.5, -11),
+                    BackgroundColor3 = C.ToggleOn
+                }):Play()
+                TweenService:Create(toggleFrame, TweenInfo.new(0.25), {
+                    BackgroundColor3 = Color3.fromRGB(20, 60, 35)
+                }):Play()
+                TweenService:Create(toggleStroke, TweenInfo.new(0.25), {
+                    Color = C.ToggleOn
+                }):Play()
+                task.delay(0.15, function()
+                    doRestore()
+                    TweenService:Create(toggleDot, TweenInfo.new(0.2), {
+                        Position = UDim2.new(0, 3, 0.5, -11),
+                        BackgroundColor3 = C.TextSub
+                    }):Play()
+                    TweenService:Create(toggleFrame, TweenInfo.new(0.2), {
+                        BackgroundColor3 = C.ToggleOff
+                    }):Play()
+                    TweenService:Create(toggleStroke, TweenInfo.new(0.2), {
+                        Color = C.Accent
+                    }):Play()
+                end)
+            end
+            ktDragging = false
+        end
+    end)
+    UIS.InputChanged:Connect(function(input)
+        if ktDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local d = input.Position - ktDragStart
+            if math.abs(d.X) > 5 or math.abs(d.Y) > 5 then ktDidDrag = true end
+            toggleFrame.Position = UDim2.new(ktStartPos.X.Scale, ktStartPos.X.Offset + d.X, ktStartPos.Y.Scale, ktStartPos.Y.Offset + d.Y)
+        end
     end)
 
     -- ========== CLOSE ==========
@@ -364,317 +383,296 @@ local function showKeySystem()
     box.FocusLost:Connect(function(enter) if enter then submitKey() end end)
 end
 
--- ========== LUCKY BLOCK BATTLEGROUNDSSCRIPT (inlined) ==========
+-- ========== LUCKY BLOCK BATTLEGROUNDSSCRIPT (inlined, revamped) ==========
 function loadLuckyBlockScript()
-    local Players = game:GetService("Players")
-    local UIS = game:GetService("UserInputService")
-    local TweenService = game:GetService("TweenService")
-    local RunService = game:GetService("RunService")
+    local Players_ = game:GetService("Players")
+    local UIS_ = game:GetService("UserInputService")
+    local TweenService_ = game:GetService("TweenService")
+    local RunService_ = game:GetService("RunService")
     local RS = game:GetService("ReplicatedStorage")
-    local player = Players.LocalPlayer
+    local player_ = Players_.LocalPlayer
 
     local Blocks = {
-        Lucky   = RS:WaitForChild("SpawnLuckyBlock"),
-        Super   = RS:WaitForChild("SpawnSuperBlock"),
-        Diamond = RS:WaitForChild("SpawnDiamondBlock"),
-        Rainbow = RS:WaitForChild("SpawnRainbowBlock"),
-        Galaxy  = RS:WaitForChild("SpawnGalaxyBlock"),
+        Lucky = RS:WaitForChild("SpawnLuckyBlock"), Super = RS:WaitForChild("SpawnSuperBlock"),
+        Diamond = RS:WaitForChild("SpawnDiamondBlock"), Rainbow = RS:WaitForChild("SpawnRainbowBlock"),
+        Galaxy = RS:WaitForChild("SpawnGalaxyBlock"),
     }
 
-    local C = {
-        BG            = Color3.fromRGB(10, 10, 14),
-        Card          = Color3.fromRGB(18, 18, 24),
-        Header        = Color3.fromRGB(14, 14, 19),
-        Text          = Color3.fromRGB(228, 228, 236),
-        Sub           = Color3.fromRGB(115, 115, 132),
-        Accent        = Color3.fromRGB(85, 205, 125),
-        AccentHover   = Color3.fromRGB(100, 220, 140),
-        Border        = Color3.fromRGB(28, 28, 38),
-        Close         = Color3.fromRGB(185, 48, 48),
-        CloseHover    = Color3.fromRGB(210, 65, 65),
-        Discord       = Color3.fromRGB(88, 101, 242),
-        DiscordHover  = Color3.fromRGB(102, 115, 255),
-        TabOn         = Color3.fromRGB(85, 205, 125),
-        TabOff        = Color3.fromRGB(38, 38, 50),
-        SectionLabel  = Color3.fromRGB(255, 95, 65),
-        InputBG       = Color3.fromRGB(8, 8, 12),
-        DDHover       = Color3.fromRGB(24, 24, 32),
-        DDBg          = Color3.fromRGB(14, 14, 20),
-        ToggleOn      = Color3.fromRGB(85, 205, 125),
-        ToggleOff     = Color3.fromRGB(38, 38, 50),
-        Black         = Color3.fromRGB(5, 5, 5),
+    local L = {
+        BG=Color3.fromRGB(8,8,12), BG2=Color3.fromRGB(12,12,18), Card=Color3.fromRGB(18,18,26),
+        CardHover=Color3.fromRGB(24,24,34), Header=Color3.fromRGB(14,14,20),
+        Text=Color3.fromRGB(230,230,238), Sub=Color3.fromRGB(120,120,140),
+        Accent=Color3.fromRGB(80,200,130), AccentHover=Color3.fromRGB(95,215,145),
+        Border=Color3.fromRGB(30,30,42), BorderLight=Color3.fromRGB(40,40,55),
+        Close=Color3.fromRGB(200,55,55), CloseHover=Color3.fromRGB(225,75,75),
+        Discord=Color3.fromRGB(88,101,242), DiscordHover=Color3.fromRGB(105,118,255),
+        TabActive=Color3.fromRGB(80,200,130), TabInactive=Color3.fromRGB(18,18,26),
+        SectionLabel=Color3.fromRGB(255,100,70), InputBG=Color3.fromRGB(6,6,10),
+        DDBg=Color3.fromRGB(12,12,18), DDHover=Color3.fromRGB(22,22,32),
+        ToggleOn=Color3.fromRGB(80,200,130), ToggleOff=Color3.fromRGB(40,40,55),
+        Black=Color3.fromRGB(4,4,4), White=Color3.fromRGB(255,255,255),
+        SliderTrack=Color3.fromRGB(30,30,42), SliderFill=Color3.fromRGB(80,200,130),
+        SliderKnob=Color3.fromRGB(240,240,248),
     }
 
-    local noclipConn = nil
+    local noclipConn2 = nil
+    local stateWS = 16
+    local stateJP = 50
+    local stateNC = false
 
-    local function new(class, props, parent)
-        local inst = Instance.new(class)
-        for k, v in pairs(props) do inst[k] = v end
-        if parent then inst.Parent = parent end
-        return inst
+    local function n2(c,p,pa) local i=Instance.new(c) for k,v in pairs(p) do i[k]=v end if pa then i.Parent=pa end return i end
+    local function co(i,r) return n2("UICorner",{CornerRadius=UDim.new(0,r or 10)},i) end
+    local function st(i,c,t) return n2("UIStroke",{Color=c or L.Border,Thickness=t or 1},i) end
+    local function t2(i,p,d,s,di) TweenService_:Create(i,TweenInfo.new(d or 0.3,s or Enum.EasingStyle.Quad,di or Enum.EasingDirection.Out),p):Play() end
+    local function clp(v,lo,hi) return math.max(lo,math.min(hi,v)) end
+
+    local gui = n2("ScreenGui",{Name="LBB_SheitsaHub",ResetOnSpawn=false,ZIndexBehavior=Enum.ZIndexBehavior.Sibling},CoreGui)
+    local main = n2("Frame",{Size=UDim2.new(0,0,0,0),Position=UDim2.new(0.5,-190,0.5,-240),BackgroundColor3=L.BG,BackgroundTransparency=0.03,BorderSizePixel=0},gui)
+    co(main,14); st(main,L.BorderLight,1)
+    task.defer(function() t2(main,{Size=UDim2.new(0,380,0,480)},0.5,Enum.EasingStyle.Back,Enum.EasingDirection.Out) end)
+
+    local header = n2("Frame",{Size=UDim2.new(1,0,0,52),BackgroundColor3=L.Header,BorderSizePixel=0},main)
+    co(header,14)
+    n2("Frame",{Size=UDim2.new(1,0,0,14),Position=UDim2.new(0,0,1,-14),BackgroundColor3=L.Header,BorderSizePixel=0},header)
+    n2("Frame",{Size=UDim2.new(1,0,0,1.5),Position=UDim2.new(0,0,1,-1.5),BackgroundColor3=L.Border,BorderSizePixel=0},header)
+
+    n2("TextLabel",{Text="LUCKY BLOCK Battlegrounds",Size=UDim2.new(1,-80,0.52,0),Position=UDim2.new(0,16,0,0),BackgroundTransparency=1,TextColor3=L.Text,TextSize=14.5,Font=Enum.Font.GothamBold,TextXAlignment=Enum.TextXAlignment.Left,TextTruncate=Enum.TextTruncate.AtEnd},header)
+    n2("TextLabel",{Text="Sheitsa Hub V2",Size=UDim2.new(1,-80,0.42,0),Position=UDim2.new(0,16,0.55,0),BackgroundTransparency=1,TextColor3=L.Sub,TextSize=10.5,Font=Enum.Font.GothamMedium,TextXAlignment=Enum.TextXAlignment.Left},header)
+
+    local minBtn = n2("TextButton",{Size=UDim2.new(0,28,0,28),Position=UDim2.new(1,-66,0,12),BackgroundColor3=L.Card,Text="\226\128\148",TextColor3=L.Sub,TextSize=18,Font=Enum.Font.GothamBold,BorderSizePixel=0,AutoButtonColor=false},header)
+    co(minBtn,7)
+    minBtn.MouseEnter:Connect(function() t2(minBtn,{BackgroundColor3=L.CardHover},0.15) end)
+    minBtn.MouseLeave:Connect(function() t2(minBtn,{BackgroundColor3=L.Card},0.15) end)
+
+    local closeBtn = n2("TextButton",{Size=UDim2.new(0,28,0,28),Position=UDim2.new(1,-34,0,12),BackgroundColor3=L.Close,Text="\226\156\156",TextColor3=L.White,TextSize=14,Font=Enum.Font.GothamBold,BorderSizePixel=0,AutoButtonColor=false},header)
+    co(closeBtn,7)
+    closeBtn.MouseEnter:Connect(function() t2(closeBtn,{BackgroundColor3=L.CloseHover},0.15) end)
+    closeBtn.MouseLeave:Connect(function() t2(closeBtn,{BackgroundColor3=L.Close},0.15) end)
+
+    local tabNav = n2("Frame",{Size=UDim2.new(1,0,0,42),Position=UDim2.new(0,0,0,52),BackgroundColor3=L.BG2,BorderSizePixel=0},main)
+    local tabNames={"Lucky Blocks","Universal","Credits"}
+    local tabButtons={}
+
+    for i,name in ipairs(tabNames) do
+        local isActive=(i==1)
+        local btn=n2("TextButton",{Size=UDim2.new(1/3,0,1,0),Position=UDim2.new((i-1)/3,0,0,0),BackgroundColor3=isActive and L.TabActive or L.TabInactive,Text=name,TextColor3=isActive and L.Black or L.Sub,TextSize=12,Font=Enum.Font.GothamSemibold,BorderSizePixel=0,AutoButtonColor=false},tabNav)
+        if isActive then n2("Frame",{Size=UDim2.new(0.4,0,0,2.5),Position=UDim2.new(0.3,0,1,-2.5),BackgroundColor3=L.Black,BorderSizePixel=0},btn) end
+        btn.MouseEnter:Connect(function() if not isActive then t2(btn,{BackgroundColor3=L.CardHover},0.15) end end)
+        btn.MouseLeave:Connect(function() if not isActive then t2(btn,{BackgroundColor3=L.TabInactive},0.15) end end)
+        tabButtons[name]=btn
     end
-    local function corner(inst, r) return new("UICorner", {CornerRadius = UDim.new(0, r or 10)}, inst) end
-    local function stroke(inst, c, t) return new("UIStroke", {Color = c or C.Border, Thickness = t or 1}, inst) end
-    local function tw(inst, props, dur, style, dir)
-        TweenService:Create(inst, TweenInfo.new(dur or 0.3, style or Enum.EasingStyle.Quad, dir or Enum.EasingDirection.Out), props):Play()
+
+    local contentArea=n2("Frame",{Size=UDim2.new(1,-20,1,-108),Position=UDim2.new(0,10,0,98),BackgroundTransparency=1,ClipsDescendants=true},main)
+    local tabFrames={}
+    for _,name in ipairs(tabNames) do
+        local scroll=n2("ScrollingFrame",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=3,ScrollBarImageColor3=Color3.fromRGB(50,50,65),CanvasSize=UDim2.new(0,0,0,0),AutomaticCanvasSize=Enum.AutomaticSize.Y,Visible=(name=="Lucky Blocks")},contentArea)
+        n2("UIPadding",{PaddingTop=UDim.new(0,8),PaddingBottom=UDim.new(0,10),PaddingLeft=UDim.new(0,4),PaddingRight=UDim.new(0,4)},scroll)
+        n2("UIListLayout",{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,8)},scroll)
+        tabFrames[name]=scroll
     end
 
-    local gui = new("ScreenGui", { Name = "LBB_SheitsaHub", ResetOnSpawn = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, game:GetService("CoreGui"))
+    -- Status bar
+    n2("TextLabel",{Text="Sheitsa Hub V2  |  Lucky Block Battlegrounds",Size=UDim2.new(1,-16,0,26),Position=UDim2.new(0,8,1,-26),BackgroundColor3=L.Header,BorderSizePixel=0,TextColor3=L.Sub,TextSize=9.5,Font=Enum.Font.GothamMedium,TextXAlignment=Enum.TextXAlignment.Left},main)
 
-    local main = new("Frame", {
-        Name = "Main", Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, -172, 0.5, -210),
-        BackgroundColor3 = C.BG, BackgroundTransparency = 0.03, BorderSizePixel = 0,
-    }, gui)
-    corner(main, 14); stroke(main)
+    -- Components
+    local function makeSec(par,text,ord) n2("TextLabel",{Text=text,Size=UDim2.new(1,0,0,22),BackgroundTransparency=1,TextColor3=L.SectionLabel,TextSize=11.5,Font=Enum.Font.GothamBold,TextXAlignment=Enum.TextXAlignment.Left,LayoutOrder=ord or 0},par) end
 
-    task.defer(function()
-        tw(main, {Size = UDim2.new(0, 344, 0, 420)}, 0.55, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-    end)
+    local function makeBtn(par,text,bg,hv,ord,cb)
+        local w=n2("Frame",{Size=UDim2.new(1,0,0,42),BackgroundColor3=bg,BorderSizePixel=0,LayoutOrder=ord or 0},par)
+        co(w,10); st(w,L.BorderLight,1)
+        local b=n2("TextButton",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,Text=text,TextColor3=L.Black,TextSize=13.5,Font=Enum.Font.GothamSemibold,BorderSizePixel=0,AutoButtonColor=false},w)
+        w.MouseEnter:Connect(function() t2(w,{BackgroundColor3=hv},0.2) end)
+        w.MouseLeave:Connect(function() t2(w,{BackgroundColor3=bg},0.2) end)
+        if cb then b.MouseButton1Click:Connect(cb) end
+        return w,b
+    end
 
-    local header = new("Frame", { Size = UDim2.new(1, 0, 0, 48), BackgroundColor3 = C.Header, BorderSizePixel = 0 }, main)
-    corner(header, 14)
-    new("Frame", {Size = UDim2.new(1, 0, 0, 14), Position = UDim2.new(0, 0, 1, -14), BackgroundColor3 = C.Header, BorderSizePixel = 0}, header)
-
-    new("TextLabel", {
-        Text = "LUCKY BLOCK Battlegrounds", Size = UDim2.new(1, -76, 0.48, 0), Position = UDim2.new(0, 14, 0, 0),
-        BackgroundTransparency = 1, TextColor3 = C.Text, TextSize = 13.5,
-        Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd,
-    }, header)
-    new("TextLabel", {
-        Text = "Sheitsa Hub V2", Size = UDim2.new(1, -76, 0.44, 0), Position = UDim2.new(0, 14, 0.52, 0),
-        BackgroundTransparency = 1, TextColor3 = C.Sub, TextSize = 10,
-        Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left,
-    }, header)
-
-    local closeBtn = new("TextButton", {
-        Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(1, -38, 0, 9),
-        BackgroundColor3 = C.Close, Text = "✕", TextColor3 = Color3.new(1,1,1),
-        TextSize = 13, Font = Enum.Font.GothamBold, BorderSizePixel = 0, AutoButtonColor = false,
-    }, header)
-    corner(closeBtn, 8)
-    closeBtn.MouseButton1Click:Connect(function()
-        tw(main, {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}, 0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-        task.delay(0.3, function() gui:Destroy() end)
-    end)
-    closeBtn.MouseEnter:Connect(function() tw(closeBtn, {BackgroundColor3 = C.CloseHover}, 0.15) end)
-    closeBtn.MouseLeave:Connect(function() tw(closeBtn, {BackgroundColor3 = C.Close}, 0.15) end)
-
-    -- Tabs
-    local tabNav = new("Frame", { Size = UDim2.new(1, 0, 0, 38), Position = UDim2.new(0, 0, 0, 48), BackgroundColor3 = Color3.fromRGB(12, 12, 17), BorderSizePixel = 0 }, main)
-    new("Frame", {Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 1, -1), BackgroundColor3 = C.Border, BorderSizePixel = 0}, tabNav)
-
-    local tabNames = {"Lucky Blocks", "Universal", "Credits"}
-    local tabButtons = {}
-    local tabCount = #tabNames
-
-    for i, name in ipairs(tabNames) do
-        local isActive = (i == 1)
-        local btn = new("TextButton", {
-            Size = UDim2.new(1 / tabCount, 0, 1, 0), Position = UDim2.new((i - 1) / tabCount, 0, 0, 0),
-            BackgroundColor3 = isActive and C.TabOn or C.TabOff, Text = name,
-            TextColor3 = isActive and C.Black or C.Sub, TextSize = 11.5,
-            Font = Enum.Font.GothamSemibold, BorderSizePixel = 0, AutoButtonColor = false,
-        }, tabNav)
-        if isActive then
-            new("Frame", { Size = UDim2.new(0.5, 0, 0, 2), Position = UDim2.new(0.25, 0, 1, -2), BackgroundColor3 = C.Black, BorderSizePixel = 0 }, btn)
+    local function makeDD(par,label,opts,def,ord)
+        local wr=n2("Frame",{Size=UDim2.new(1,0,0,0),BackgroundTransparency=1,AutomaticSize=Enum.AutomaticSize.Y,LayoutOrder=ord or 0},par)
+        n2("UIListLayout",{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,5)},wr)
+        n2("TextLabel",{Text=label,Size=UDim2.new(1,0,0,16),BackgroundTransparency=1,TextColor3=L.Sub,TextSize=11,Font=Enum.Font.GothamMedium,TextXAlignment=Enum.TextXAlignment.Left},wr)
+        local sel=def or opts[1]; local isO=false
+        local sw=n2("Frame",{Size=UDim2.new(1,0,0,36),BackgroundColor3=L.InputBG,BorderSizePixel=0},wr)
+        co(sw,9); st(sw,L.Border,1)
+        local sb=n2("TextButton",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,Text="  \226\149\190  "..sel,TextColor3=L.Text,TextSize=12.5,Font=Enum.Font.Gotham,BorderSizePixel=0,TextXAlignment=Enum.TextXAlignment.Left,AutoButtonColor=false},sw)
+        local lf=n2("Frame",{Size=UDim2.new(1,0,0,0),BackgroundColor3=L.DDBg,BorderSizePixel=0,ClipsDescendants=true,ZIndex=5},wr)
+        co(lf,9); st(lf,L.Border,1)
+        n2("UIListLayout",{SortOrder=Enum.SortOrder.LayoutOrder},lf)
+        for i,opt in ipairs(opts) do
+            local ob=n2("TextButton",{Size=UDim2.new(1,0,0,32),BackgroundColor3=L.DDBg,Text="   "..opt,TextColor3=L.Text,TextSize=12,Font=Enum.Font.Gotham,BorderSizePixel=0,TextXAlignment=Enum.TextXAlignment.Left,AutoButtonColor=false,LayoutOrder=i,ZIndex=5},lf)
+            ob.MouseEnter:Connect(function() t2(ob,{BackgroundColor3=L.DDHover},0.12) end)
+            ob.MouseLeave:Connect(function() t2(ob,{BackgroundColor3=L.DDBg},0.12) end)
+            ob.MouseButton1Click:Connect(function() sel=opt; sb.Text="  \226\149\190  "..opt; isO=false; t2(lf,{Size=UDim2.new(1,0,0,0)},0.2,Enum.EasingStyle.Quad,Enum.EasingDirection.In) end)
         end
-        tabButtons[name] = btn
+        sb.MouseButton1Click:Connect(function() isO=not isO; t2(lf,{Size=UDim2.new(1,0,0,isO and (#opts*32+4) or 0)},0.2) end)
+        return {Get=function() return sel end}
     end
 
-    local contentArea = new("Frame", {
-        Size = UDim2.new(1, -20, 1, -96), Position = UDim2.new(0, 10, 0, 92),
-        BackgroundTransparency = 1, ClipsDescendants = true,
-    }, main)
-
-    local tabFrames = {}
-    for _, name in ipairs(tabNames) do
-        local scroll = new("ScrollingFrame", {
-            Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, BorderSizePixel = 0,
-            ScrollBarThickness = 3, ScrollBarImageColor3 = Color3.fromRGB(45, 45, 58),
-            CanvasSize = UDim2.new(0, 0, 0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y,
-            Visible = (name == "Lucky Blocks"),
-        }, contentArea)
-        new("UIPadding", {PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 10), PaddingLeft = UDim.new(0, 2), PaddingRight = UDim.new(0, 2)}, scroll)
-        new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8)}, scroll)
-        tabFrames[name] = scroll
-    end
-
-    local function makeSection(parent, text, order)
-        new("TextLabel", {
-            Text = text, Size = UDim2.new(1, 0, 0, 20), BackgroundTransparency = 1,
-            TextColor3 = C.SectionLabel, TextSize = 11.5, Font = Enum.Font.GothamBold,
-            TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = order or 0,
-        }, parent)
-    end
-
-    local function makeDropdown(parent, label, options, default, order)
-        local wrap = new("Frame", { Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, AutomaticSize = Enum.AutomaticSize.Y, LayoutOrder = order or 0 }, parent)
-        new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4)}, wrap)
-        new("TextLabel", { Text = label, Size = UDim2.new(1, 0, 0, 16), BackgroundTransparency = 1, TextColor3 = C.Sub, TextSize = 11, Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left }, wrap)
-
-        local selected = default or options[1]
-        local isOpen = false
-        local selectBtn = new("TextButton", {
-            Size = UDim2.new(1, 0, 0, 34), BackgroundColor3 = C.InputBG,
-            Text = "  ▾  " .. selected, TextColor3 = C.Text, TextSize = 12, Font = Enum.Font.Gotham,
-            BorderSizePixel = 0, TextXAlignment = Enum.TextXAlignment.Left, AutoButtonColor = false,
-        }, wrap)
-        corner(selectBtn, 8); stroke(selectBtn)
-
-        local listFrame = new("Frame", { Size = UDim2.new(1, 0, 0, 0), BackgroundColor3 = C.DDBg, BorderSizePixel = 0, ClipsDescendants = true }, wrap)
-        corner(listFrame, 8); stroke(listFrame)
-        new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder}, listFrame)
-
-        for i, opt in ipairs(options) do
-            local oBtn = new("TextButton", {
-                Size = UDim2.new(1, 0, 0, 30), BackgroundColor3 = C.DDBg,
-                Text = "   " .. opt, TextColor3 = C.Text, TextSize = 12, Font = Enum.Font.Gotham,
-                BorderSizePixel = 0, TextXAlignment = Enum.TextXAlignment.Left, AutoButtonColor = false, LayoutOrder = i,
-            }, listFrame)
-            oBtn.MouseEnter:Connect(function() oBtn.BackgroundColor3 = C.DDHover end)
-            oBtn.MouseLeave:Connect(function() oBtn.BackgroundColor3 = C.DDBg end)
-            oBtn.MouseButton1Click:Connect(function()
-                selected = opt; selectBtn.Text = "  ▾  " .. opt; isOpen = false
-                tw(listFrame, {Size = UDim2.new(1, 0, 0, 0)}, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-            end)
-        end
-        selectBtn.MouseButton1Click:Connect(function()
-            isOpen = not isOpen
-            tw(listFrame, {Size = UDim2.new(1, 0, 0, isOpen and (#options * 30) or 0)}, 0.2)
-        end)
-        return { Get = function() return selected end }
-    end
-
-    local function makeButton(parent, text, bgColor, hoverColor, order, cb)
-        local btn = new("TextButton", {
-            Size = UDim2.new(1, 0, 0, 38), BackgroundColor3 = bgColor, Text = text,
-            TextColor3 = C.Black, TextSize = 13, Font = Enum.Font.GothamSemibold,
-            BorderSizePixel = 0, AutoButtonColor = false, LayoutOrder = order or 0,
-        }, parent)
-        corner(btn, 9)
-        btn.MouseEnter:Connect(function() tw(btn, {BackgroundColor3 = hoverColor}, 0.15) end)
-        btn.MouseLeave:Connect(function() tw(btn, {BackgroundColor3 = bgColor}, 0.15) end)
-        if cb then btn.MouseButton1Click:Connect(cb) end
-        return btn
-    end
-
-    local function makeInputRow(parent, labelText, defaultVal, btnText, order, callback)
-        local wrap = new("Frame", { Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1, AutomaticSize = Enum.AutomaticSize.Y, LayoutOrder = order or 0 }, parent)
-        new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4)}, wrap)
-        new("TextLabel", { Text = labelText, Size = UDim2.new(1, 0, 0, 16), BackgroundTransparency = 1, TextColor3 = C.Sub, TextSize = 11, Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left }, wrap)
-        local row = new("Frame", { Size = UDim2.new(1, 0, 0, 36), BackgroundTransparency = 1 }, wrap)
-        new("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6), FillDirection = Enum.FillDirection.Horizontal}, row)
-        local input = new("TextBox", {
-            Size = UDim2.new(1, -100, 1, 0), BackgroundColor3 = C.InputBG, Text = defaultVal or "",
-            TextColor3 = C.Text, PlaceholderText = "Enter value...", PlaceholderColor3 = Color3.fromRGB(65, 65, 80),
-            TextSize = 13, Font = Enum.Font.Gotham, BorderSizePixel = 0,
-        }, row)
-        corner(input, 8); stroke(input)
-        makeButton(row, btnText, C.Accent, C.AccentHover, 0, function()
-            local v = tonumber(input.Text)
-            if v then callback(v) end
-        end)
-        return input
+    local function makeSlider(par,label,minV,maxV,defV,ord,cb)
+        local wr=n2("Frame",{Size=UDim2.new(1,0,0,0),BackgroundTransparency=1,AutomaticSize=Enum.AutomaticSize.Y,LayoutOrder=ord or 0},par)
+        n2("UIListLayout",{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,5)},wr)
+        local lr=n2("Frame",{Size=UDim2.new(1,0,0,18),BackgroundTransparency=1},wr)
+        n2("TextLabel",{Text=label,Size=UDim2.new(0.7,0,1,0),BackgroundTransparency=1,TextColor3=L.Sub,TextSize=11,Font=Enum.Font.GothamMedium,TextXAlignment=Enum.TextXAlignment.Left},lr)
+        local vl=n2("TextLabel",{Text=tostring(defV),Size=UDim2.new(0.3,0,1,0),Position=UDim2.new(0.7,0,0,0),BackgroundTransparency=1,TextColor3=L.Text,TextSize=12,Font=Enum.Font.GothamBold,TextXAlignment=Enum.TextXAlignment.Right},lr)
+        local tw2=n2("Frame",{Size=UDim2.new(1,0,0,32),BackgroundTransparency=1},wr)
+        local tk=n2("Frame",{Size=UDim2.new(1,0,0,6),Position=UDim2.new(0,0,0.5,-3),BackgroundColor3=L.SliderTrack,BorderSizePixel=0},tw2)
+        co(tk,3)
+        local fl=n2("Frame",{Size=UDim2.new(0,0,1,0),BackgroundColor3=L.SliderFill,BorderSizePixel=0},tk)
+        co(fl,3)
+        local kn=n2("Frame",{Size=UDim2.new(0,18,0,18),Position=UDim2.new(0,0,0.5,-9),BackgroundColor3=L.SliderKnob,BorderSizePixel=0},tw2)
+        co(kn,9); st(kn,L.Accent,2)
+        local cV=defV; local sliding=false
+        local function uV(v) local p=(v-minV)/(maxV-minV); fl.Size=UDim2.new(p,0,1,0); kn.Position=UDim2.new(p,-9,0.5,-9); vl.Text=tostring(math.round(v)) end
+        uV(defV)
+        local function sVFX(x) local r=clp((x-tk.AbsolutePosition.X)/tk.AbsoluteSize.X,0,1); local v=minV+r*(maxV-minV); v=math.round(v); cV=v; uV(v); if cb then cb(v) end end
+        tw2.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then sliding=true; sVFX(i.Position.X) end end)
+        tw2.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then sliding=false end end)
+        UIS_.InputChanged:Connect(function(i) if sliding and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then sVFX(i.Position.X) end end)
     end
 
     -- TAB 1: LUCKY BLOCKS
-    local lbTab = tabFrames["Lucky Blocks"]
-    makeSection(lbTab, "— Spawn Blocks", 0)
-    local blockDD = makeDropdown(lbTab, "Select Block Type", {"Lucky Block", "Super Block", "Diamond Block"}, "Lucky Block", 1)
-    makeButton(lbTab, "Spawn Block", C.Accent, C.AccentHover, 2, function()
-        local map = { ["Lucky Block"] = Blocks.Lucky, ["Super Block"] = Blocks.Super, ["Diamond Block"] = Blocks.Diamond }
-        local remote = map[blockDD.Get()]
-        if remote then remote:FireServer() end
+    local lbTab=tabFrames["Lucky Blocks"]
+    makeSec(lbTab,"-- Spawn Blocks",0)
+    local blockDD=makeDD(lbTab,"Select Block Type",{"Lucky Block","Super Block","Diamond Block"},"Lucky Block",1)
+    makeBtn(lbTab,"Spawn Block",L.Accent,L.AccentHover,2,function()
+        local m={["Lucky Block"]=Blocks.Lucky,["Super Block"]=Blocks.Super,["Diamond Block"]=Blocks.Diamond}
+        local r=m[blockDD.Get()]; if r then r:FireServer() end
     end)
-    new("Frame", {Size = UDim2.new(1, 0, 0, 8), BackgroundTransparency = 1, LayoutOrder = 3}, lbTab)
-    makeSection(lbTab, "— VERY OP (Gamepass Blocks)", 4)
-    local gpDD = makeDropdown(lbTab, "Select Gamepass Block", {"Rainbow Lucky Block", "Galaxy Lucky Block"}, "Rainbow Lucky Block", 5)
-    makeButton(lbTab, "Spawn Gamepass Block", C.SectionLabel, Color3.fromRGB(255, 115, 85), 6, function()
-        local map = { ["Rainbow Lucky Block"] = Blocks.Rainbow, ["Galaxy Lucky Block"] = Blocks.Galaxy }
-        local remote = map[gpDD.Get()]
-        if remote then remote:FireServer() end
+
+    -- Spawn amount
+    local amWr=n2("Frame",{Size=UDim2.new(1,0,0,0),BackgroundTransparency=1,AutomaticSize=Enum.AutomaticSize.Y,LayoutOrder=3},lbTab)
+    n2("UIListLayout",{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,5)},amWr)
+    n2("TextLabel",{Text="Spawn Multiple (1-50)",Size=UDim2.new(1,0,0,16),BackgroundTransparency=1,TextColor3=L.Sub,TextSize=11,Font=Enum.Font.GothamMedium,TextXAlignment=Enum.TextXAlignment.Left},amWr)
+    local amRow=n2("Frame",{Size=UDim2.new(1,0,0,36),BackgroundTransparency=1},amWr)
+    n2("UIListLayout",{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,6),FillDirection=Enum.FillDirection.Horizontal},amRow)
+    local amIn=n2("TextBox",{Size=UDim2.new(1,-120,1,0),BackgroundColor3=L.InputBG,Text="5",TextColor3=L.Text,PlaceholderText="Amount...",PlaceholderColor3=Color3.fromRGB(65,65,80),TextSize=13,Font=Enum.Font.Gotham,BorderSizePixel=0},amRow)
+    co(amIn,9); st(amIn,L.Border,1)
+    makeBtn(amRow,"Spawn x Blocks",L.Accent,L.AccentHover,0,function()
+        local amt=clp(tonumber(amIn.Text) or 1,1,50)
+        local m={["Lucky Block"]=Blocks.Lucky,["Super Block"]=Blocks.Super,["Diamond Block"]=Blocks.Diamond}
+        local r=m[blockDD.Get()]
+        if r then for i=1,amt do r:FireServer(); if i<amt then task.wait(0.1) end end end
+    end)
+
+    n2("Frame",{Size=UDim2.new(1,0,0,8),BackgroundTransparency=1,LayoutOrder=4},lbTab)
+    makeSec(lbTab,"-- VERY OP (Gamepass Blocks)",5)
+    local gpDD=makeDD(lbTab,"Select Gamepass Block",{"Rainbow Lucky Block","Galaxy Lucky Block"},"Rainbow Lucky Block",6)
+    makeBtn(lbTab,"Spawn Gamepass Block",L.SectionLabel,Color3.fromRGB(255,115,85),7,function()
+        local m={["Rainbow Lucky Block"]=Blocks.Rainbow,["Galaxy Lucky Block"]=Blocks.Galaxy}
+        local r=m[gpDD.Get()]; if r then r:FireServer() end
+    end)
+    local gpWr=n2("Frame",{Size=UDim2.new(1,0,0,0),BackgroundTransparency=1,AutomaticSize=Enum.AutomaticSize.Y,LayoutOrder=8},lbTab)
+    n2("UIListLayout",{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,5)},gpWr)
+    n2("TextLabel",{Text="Spawn Multiple (1-50)",Size=UDim2.new(1,0,0,16),BackgroundTransparency=1,TextColor3=L.Sub,TextSize=11,Font=Enum.Font.GothamMedium,TextXAlignment=Enum.TextXAlignment.Left},gpWr)
+    local gpRow=n2("Frame",{Size=UDim2.new(1,0,0,36),BackgroundTransparency=1},gpWr)
+    n2("UIListLayout",{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,6),FillDirection=Enum.FillDirection.Horizontal},gpRow)
+    local gpIn=n2("TextBox",{Size=UDim2.new(1,-120,1,0),BackgroundColor3=L.InputBG,Text="3",TextColor3=L.Text,PlaceholderText="Amount...",PlaceholderColor3=Color3.fromRGB(65,65,80),TextSize=13,Font=Enum.Font.Gotham,BorderSizePixel=0},gpRow)
+    co(gpIn,9); st(gpIn,L.Border,1)
+    makeBtn(gpRow,"Spawn x Blocks",L.SectionLabel,Color3.fromRGB(255,115,85),0,function()
+        local amt=clp(tonumber(gpIn.Text) or 1,1,50)
+        local m={["Rainbow Lucky Block"]=Blocks.Rainbow,["Galaxy Lucky Block"]=Blocks.Galaxy}
+        local r=m[gpDD.Get()]
+        if r then for i=1,amt do r:FireServer(); if i<amt then task.wait(0.1) end end end
     end)
 
     -- TAB 2: UNIVERSAL
-    local uniTab = tabFrames["Universal"]
-    makeSection(uniTab, "— Movement", 0)
-    makeInputRow(uniTab, "WalkSpeed", "50", "Set", 1, function(v)
-        if player.Character and player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.WalkSpeed = v end
+    local uniTab=tabFrames["Universal"]
+    makeSec(uniTab,"-- Movement",0)
+    makeSlider(uniTab,"WalkSpeed",10,200,16,1,function(v)
+        stateWS=v
+        if player_.Character and player_.Character:FindFirstChild("Humanoid") then player_.Character.Humanoid.WalkSpeed=v end
     end)
-    makeInputRow(uniTab, "JumpPower", "100", "Set", 2, function(v)
-        if player.Character and player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.JumpPower = v end
+    makeSlider(uniTab,"JumpPower",10,500,50,2,function(v)
+        stateJP=v
+        if player_.Character and player_.Character:FindFirstChild("Humanoid") then player_.Character.Humanoid.JumpPower=v end
     end)
 
-    makeSection(uniTab, "— Physics", 3)
-    local noclipOn = false
-    local noclipBtn = new("TextButton", {
-        Size = UDim2.new(1, 0, 0, 38), BackgroundColor3 = C.ToggleOff,
-        Text = "  NoClip: OFF", TextColor3 = C.Sub, TextSize = 13,
-        Font = Enum.Font.GothamSemibold, BorderSizePixel = 0, AutoButtonColor = false, LayoutOrder = 4,
-    }, uniTab)
-    corner(noclipBtn, 9); stroke(noclipBtn)
-    noclipBtn.MouseButton1Click:Connect(function()
-        noclipOn = not noclipOn
-        if noclipOn then
-            noclipBtn.Text = "  NoClip: ON"; noclipBtn.BackgroundColor3 = C.ToggleOn; noclipBtn.TextColor3 = C.Black
-            noclipConn = RunService.Stepped:Connect(function()
-                if player.Character then for _, p in ipairs(player.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end end
-            end)
+    makeSec(uniTab,"-- Physics",3)
+    -- NoClip toggle
+    local ncW=n2("Frame",{Size=UDim2.new(1,0,0,44),BackgroundColor3=L.Card,BorderSizePixel=0,LayoutOrder=4},uniTab)
+    co(ncW,10); st(ncW,L.Border,1)
+    n2("TextLabel",{Text="  NoClip",Size=UDim2.new(1,-64,1,0),BackgroundTransparency=1,TextColor3=L.Sub,TextSize=13,Font=Enum.Font.GothamMedium,TextXAlignment=Enum.TextXAlignment.Left},ncW)
+    local ncBg=n2("Frame",{Size=UDim2.new(0,44,0,24),Position=UDim2.new(1,-54,0.5,-12),BackgroundColor3=L.ToggleOff,BorderSizePixel=0},ncW)
+    co(ncBg,12)
+    local ncDot=n2("Frame",{Size=UDim2.new(0,18,0,18),Position=UDim2.new(0,3,0.5,-9),BackgroundColor3=L.White,BorderSizePixel=0},ncBg)
+    co(ncDot,9)
+    local ncOn=false
+    local ncBtn2=n2("TextButton",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,Text="",AutoButtonColor=false},ncW)
+    ncW.MouseEnter:Connect(function() t2(ncW,{BackgroundColor3=L.CardHover},0.15) end)
+    ncW.MouseLeave:Connect(function() t2(ncW,{BackgroundColor3=L.Card},0.15) end)
+    ncBtn2.MouseButton1Click:Connect(function()
+        ncOn=not ncOn; stateNC=ncOn
+        t2(ncDot,{Position=ncOn and UDim2.new(1,-21,0.5,-9) or UDim2.new(0,3,0.5,-9)},0.25,Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+        t2(ncBg,{BackgroundColor3=ncOn and L.ToggleOn or L.ToggleOff},0.25)
+        for _,c in ipairs(ncW:GetChildren()) do if c:IsA("TextLabel") then t2(c,{TextColor3=ncOn and L.White or L.Sub},0.2) end end
+        if ncOn then
+            noclipConn2=RunService_.Stepped:Connect(function() if player_.Character then for _,p in ipairs(player_.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide=false end end end end)
         else
-            noclipBtn.Text = "  NoClip: OFF"; noclipBtn.BackgroundColor3 = C.ToggleOff; noclipBtn.TextColor3 = C.Sub
-            if noclipConn then noclipConn:Disconnect(); noclipConn = nil end
-            if player.Character then for _, p in ipairs(player.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = true end end end
+            if noclipConn2 then noclipConn2:Disconnect(); noclipConn2=nil end
+            if player_.Character then for _,p in ipairs(player_.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide=true end end end
         end
     end)
 
-    makeSection(uniTab, "— Tools", 5)
-    local adminBtn = makeButton(uniTab, "Get Admin (Infinite Yield)", C.Discord, C.DiscordHover, 6, function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source", true))()
+    makeSec(uniTab,"-- Tools",5)
+    local iyW,iyB=makeBtn(uniTab,"Infinite Yield",L.Discord,L.DiscordHover,6,function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source",true))()
     end)
-    adminBtn.TextColor3 = Color3.new(1, 1, 1)
+    iyB.TextColor3=L.White
 
     -- TAB 3: CREDITS
-    local crTab = tabFrames["Credits"]
-    new("TextLabel", { Text = "LUCKY BLOCK Battlegrounds", Size = UDim2.new(1, 0, 0, 26), BackgroundTransparency = 1, TextColor3 = C.Text, TextSize = 16, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = 0 }, crTab)
-    new("TextLabel", { Text = "Sheitsa Hub V2", Size = UDim2.new(1, 0, 0, 20), BackgroundTransparency = 1, TextColor3 = C.Accent, TextSize = 13, Font = Enum.Font.GothamSemibold, TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = 1 }, crTab)
-    new("Frame", {Size = UDim2.new(1, 0, 0, 1), BackgroundColor3 = C.Border, BorderSizePixel = 0, LayoutOrder = 2}, crTab)
-    new("TextLabel", { Text = "Script made by the Sheitsa Dev Team.", Size = UDim2.new(1, 0, 0, 20), BackgroundTransparency = 1, TextColor3 = C.Sub, TextSize = 12, Font = Enum.Font.GothamMedium, TextXAlignment = Enum.TextXAlignment.Left, LayoutOrder = 3 }, crTab)
-    new("TextLabel", { Text = "All credits go to Sheitsa Dev Team\nfor creating this script.", Size = UDim2.new(1, 0, 0, 36), BackgroundTransparency = 1, TextColor3 = C.Sub, TextSize = 11.5, Font = Enum.Font.Gotham, TextXAlignment = Enum.TextXAlignment.Left, TextWrapped = true, LayoutOrder = 4 }, crTab)
-    new("Frame", {Size = UDim2.new(1, 0, 0, 12), BackgroundTransparency = 1, LayoutOrder = 5}, crTab)
-    local discBtn = makeButton(crTab, "Join our Discord", C.Discord, C.DiscordHover, 6, function()
-        pcall(setclipboard, DiscordLink)
-        discBtn.Text = "✓  Link Copied!"
-        task.delay(2, function() discBtn.Text = "Join our Discord" end)
+    local crTab=tabFrames["Credits"]
+    n2("TextLabel",{Text="LUCKY BLOCK Battlegrounds",Size=UDim2.new(1,0,0,28),BackgroundTransparency=1,TextColor3=L.Text,TextSize=17,Font=Enum.Font.GothamBold,TextXAlignment=Enum.TextXAlignment.Left,LayoutOrder=0},crTab)
+    n2("TextLabel",{Text="Sheitsa Hub V2",Size=UDim2.new(1,0,0,22),BackgroundTransparency=1,TextColor3=L.Accent,TextSize=13.5,Font=Enum.Font.GothamSemibold,TextXAlignment=Enum.TextXAlignment.Left,LayoutOrder=1},crTab)
+    n2("Frame",{Size=UDim2.new(1,0,0,1),BackgroundColor3=L.Border,BorderSizePixel=0,LayoutOrder=2},crTab)
+    n2("TextLabel",{Text="Script made by the Sheitsa Dev Team.",Size=UDim2.new(1,0,0,22),BackgroundTransparency=1,TextColor3=L.Sub,TextSize=12.5,Font=Enum.Font.GothamMedium,TextXAlignment=Enum.TextXAlignment.Left,LayoutOrder=3},crTab)
+    n2("TextLabel",{Text="All credits go to Sheitsa Dev Team\nfor creating this script.",Size=UDim2.new(1,0,0,40),BackgroundTransparency=1,TextColor3=L.Sub,TextSize=12,Font=Enum.Font.Gotham,TextXAlignment=Enum.TextXAlignment.Left,TextWrapped=true,LayoutOrder=4},crTab)
+    n2("Frame",{Size=UDim2.new(1,0,0,12),BackgroundTransparency=1,LayoutOrder=5},crTab)
+    local dW,dB=makeBtn(crTab,"Join our Discord",L.Discord,L.DiscordHover,6,function()
+        pcall(setclipboard,DiscordLink) dB.Text="Link Copied!"; task.delay(2,function() dB.Text="Join our Discord" end)
     end)
-    discBtn.TextColor3 = Color3.new(1, 1, 1)
+    dB.TextColor3=L.White
 
     -- Tab switching
     local function switchTab(name)
-        for n, frame in pairs(tabFrames) do frame.Visible = (n == name) end
-        for n, btn in pairs(tabButtons) do
-            local active = (n == name)
-            btn.BackgroundColor3 = active and C.TabOn or C.TabOff
-            btn.TextColor3 = active and C.Black or C.Sub
-        end
+        for n,f in pairs(tabFrames) do if n==name then f.Visible=true; f.BackgroundTransparency=0.5; t2(f,{BackgroundTransparency=0},0.2) else f.Visible=false end end
+        for n,b in pairs(tabButtons) do local a=(n==name); t2(b,{BackgroundColor3=a and L.TabActive or L.TabInactive,TextColor3=a and L.Black or L.Sub},0.25) end
     end
-    for name, btn in pairs(tabButtons) do btn.MouseButton1Click:Connect(function() switchTab(name) end) end
+    for name,btn in pairs(tabButtons) do btn.MouseButton1Click:Connect(function() switchTab(name) end) end
 
-    -- Drag
-    local dragging, dragStart, startPos
-    header.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true; dragStart = input.Position; startPos = main.Position
+    -- Respawn persistence
+    player_.CharacterAdded:Connect(function(char)
+        local h=char:WaitForChild("Humanoid"); h.WalkSpeed=stateWS; h.JumpPower=stateJP
+        task.wait(1)
+        if stateNC then
+            if noclipConn2 then noclipConn2:Disconnect() end
+            noclipConn2=RunService_.Stepped:Connect(function() if player_.Character then for _,p in ipairs(player_.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide=false end end end end)
         end
     end)
-    header.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end
-    end)
-    UIS.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local d = input.Position - dragStart
-            main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
-        end
-    end)
+
+    -- Minimize/Close + Toggle button
+    local mainVis=true
+    local toggleGui=n2("ScreenGui",{Name="LBB_Toggle",ResetOnSpawn=false,ZIndexBehavior=Enum.ZIndexBehavior.Sibling},CoreGui)
+    local toggleBtn=n2("TextButton",{Size=UDim2.new(0,44,0,44),Position=UDim2.new(0.5,-22,0,14),BackgroundColor3=Color3.fromRGB(12,12,16),Text="",BorderSizePixel=0,AutoButtonColor=false,Visible=false},toggleGui)
+    co(toggleBtn,11)
+    local tSt=Instance.new("UIStroke",toggleBtn); tSt.Color=Color3.fromRGB(190,190,200); tSt.Thickness=1.5
+    local tIc=n2("TextLabel",toggleBtn); tIc.Size=UDim2.new(1,0,1,0); tIc.Text="LB"; tIc.TextSize=13; tIc.BackgroundTransparency=1; tIc.TextColor3=Color3.fromRGB(200,200,210); tIc.Font=Enum.Font.GothamBold
+
+    local function hideM() mainVis=false; t2(main,{Size=UDim2.new(0,0,0,0),BackgroundTransparency=1},0.3,Enum.EasingStyle.Quad,Enum.EasingDirection.In); task.delay(0.3,function() main.Visible=false; toggleBtn.Visible=true; tIc.Text="LB"; tSt.Color=Color3.fromRGB(190,190,200); toggleBtn.BackgroundColor3=Color3.fromRGB(12,12,16) end) end
+    local function showM() mainVis=true; toggleBtn.Visible=false; main.Visible=true; main.Size=UDim2.new(0,0,0,0); main.BackgroundTransparency=1; t2(main,{Size=UDim2.new(0,380,0,480),BackgroundTransparency=0.03},0.45,Enum.EasingStyle.Back,Enum.EasingDirection.Out) end
+
+    closeBtn.MouseButton1Click:Connect(hideM)
+    minBtn.MouseButton1Click:Connect(hideM)
+
+    local tbD,tbDS,tbSP,tbDD
+    toggleBtn.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then tbD=true; tbDD=false; tbDS=i.Position; tbSP=toggleBtn.Position end end)
+    toggleBtn.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then if not tbDD then if mainVis then hideM() else showM() end end; tbD=false end end)
+    UIS_.InputChanged:Connect(function(i) if tbD and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then local d=i.Position-tbDS; if math.abs(d.X)>5 or math.abs(d.Y)>5 then tbDD=true end; toggleBtn.Position=UDim2.new(tbSP.X.Scale,tbSP.X.Offset+d.X,tbSP.Y.Scale,tbSP.Y.Offset+d.Y) end end)
+
+    -- Drag main
+    local mD,mDS,mSP
+    header.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then mD=true; mDS=i.Position; mSP=main.Position end end)
+    header.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then mD=false end end)
+    UIS_.InputChanged:Connect(function(i) if mD and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then local d=i.Position-mDS; main.Position=UDim2.new(mSP.X.Scale,mSP.X.Offset+d.X,mSP.Y.Scale,mSP.Y.Offset+d.Y) end end)
 end
 
 -- ========== MAIN HUB (Fluent-Modded) ==========
@@ -693,13 +691,13 @@ function loadHub()
     })
 
     local Tabs = {
-        Main     = Window:AddTab({ Title = "Main",     Icon = "solar/home-smile-bold" }),
-        Games    = Window:AddTab({ Title = "Games",    Icon = "solar/gamepad-bold" }),
-        Scripts  = Window:AddTab({ Title = "Scripts",  Icon = "solar/code-square-bold" }),
-        Player   = Window:AddTab({ Title = "Player",   Icon = "solar/user-bold" }),
-        Misc     = Window:AddTab({ Title = "Misc",     Icon = "solar/wrench-bold" }),
-        Settings = Window:AddTab({ Title = "Settings", Icon = "solar/settings-bold" }),
-        Credits  = Window:AddTab({ Title = "Credits",  Icon = "solar/heart-bold" }),
+        Main     = Window:AddTab({ Title = "Main",     Icon = "home" }),
+        Games    = Window:AddTab({ Title = "Games",    Icon = "gamepad-2" }),
+        Scripts  = Window:AddTab({ Title = "Scripts",  Icon = "code-square" }),
+        Player   = Window:AddTab({ Title = "Player",   Icon = "user" }),
+        Misc     = Window:AddTab({ Title = "Misc",     Icon = "zap" }),
+        Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
+        Credits  = Window:AddTab({ Title = "Credits",  Icon = "heart" }),
     }
 
     -- ==========================================
@@ -707,12 +705,14 @@ function loadHub()
     -- ==========================================
     Tabs.Main:AddParagraph({
         Title = "Welcome to Sheitsa Hub V2",
-        Content = "Your all-in-one Roblox script hub. Game scripts, universal tools, player controls, and more — all in one place."
+        Content = "Your all-in-one Roblox script hub. Game scripts, universal tools, player controls, and more — all in one place.",
+        Flag = "MainWelcome"
     })
 
     Tabs.Main:AddButton({
         Title = "Join our Discord",
         Description = "Copies the invite link to your clipboard.",
+        Flag = "MainDiscord",
         Callback = function()
             pcall(setclipboard, DiscordLink)
             Fluent:Notify({ Title = "Sheitsa Hub V2", Content = "Discord link copied!", Duration = 3 })
@@ -723,7 +723,8 @@ function loadHub()
 
     Tabs.Main:AddParagraph({
         Title = "v2.0 — Full Rewrite",
-        Content = "• Migrated to Fluent-Modded (AMOLED dark theme)\n• New custom key system with save\n• Reorganized tabs with search\n• New Scripts tab for universal tools\n• Working NoClip & Fly in Player tab\n• All game scripts in alphabetical order"
+        Content = "• Migrated to Fluent-Modded (AMOLED dark theme)\n• New custom key system with save\n• Reorganized tabs with search\n• New Scripts tab for universal tools\n• Working NoClip & Fly in Player tab\n• All game scripts in alphabetical order",
+        Flag = "MainChangelog"
     })
 
     -- ==========================================
@@ -731,12 +732,14 @@ function loadHub()
     -- ==========================================
     Tabs.Games:AddParagraph({
         Title = "💡 Tip",
-        Content = "Use the search bar on the left to quickly find any game by name!"
+        Content = "Use the search bar on the left to quickly find any game by name!",
+        Flag = "GamesTip"
     })
 
     Tabs.Games:AddButton({
         Title = "Arise Crossover (OP) | NEW",
         Description = "Powerful script for Arise Crossover.",
+        Flag = "GamesArise",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/SKOIXLL/SKYLOLAND/refs/heads/main/Load.lua"))()
             Fluent:Notify({ Title = "Games", Content = "Loaded: Arise Crossover", Duration = 3 })
@@ -746,6 +749,7 @@ function loadHub()
     Tabs.Games:AddButton({
         Title = "Fight In A School (OP V2) | UPDATED",
         Description = "Updated script for Fight In A School.",
+        Flag = "GamesFIAS",
         Callback = function()
             loadstring(game:HttpGet("https://pastebin.com/raw/knUMA6ZP"))()
             Fluent:Notify({ Title = "Games", Content = "Loaded: Fight In A School", Duration = 3 })
@@ -755,6 +759,7 @@ function loadHub()
     Tabs.Games:AddButton({
         Title = "Fisch (OP)",
         Description = "Script for Fisch.",
+        Flag = "GamesFisch",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
             Fluent:Notify({ Title = "Games", Content = "Loaded: Fisch", Duration = 3 })
@@ -764,6 +769,7 @@ function loadHub()
     Tabs.Games:AddButton({
         Title = "KAT (OP)",
         Description = "Script for KAT.",
+        Flag = "GamesKAT",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/idkevenknowburh/kat/refs/heads/main/s", true))()
             Fluent:Notify({ Title = "Games", Content = "Loaded: KAT", Duration = 3 })
@@ -773,6 +779,7 @@ function loadHub()
     Tabs.Games:AddButton({
         Title = "Legends of Speed (OP V2) | UPDATED",
         Description = "Updated script for Legends of Speed.",
+        Flag = "GamesLegendsOfSpeed",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/idkevenknowburh/legends-of-speed/refs/heads/main/script", true))()
             Fluent:Notify({ Title = "Games", Content = "Loaded: Legends of Speed", Duration = 3 })
@@ -782,6 +789,7 @@ function loadHub()
     Tabs.Games:AddButton({
         Title = "LUCKY BLOCK Battlegrounds",
         Description = "Script for LUCKY BLOCK Battlegrounds.",
+        Flag = "GamesLBB",
         Callback = function()
             Fluent:Notify({ Title = "Games", Content = "Loaded: LUCKY BLOCK Battlegrounds", Duration = 3 })
             loadLuckyBlockScript()
@@ -791,6 +799,7 @@ function loadHub()
     Tabs.Games:AddButton({
         Title = "Murder Mystery 2 (OP)",
         Description = "Admin panel for Murder Mystery 2.",
+        Flag = "GamesMM2",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/MarsQQ/ScriptHubScripts/master/MM2%20Admin%20Panel", true))()
             Fluent:Notify({ Title = "Games", Content = "Loaded: Murder Mystery 2", Duration = 3 })
@@ -800,6 +809,7 @@ function loadHub()
     Tabs.Games:AddButton({
         Title = "Prison Life (OP)",
         Description = "Script for Prison Life.",
+        Flag = "GamesPrisonLife",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/devguy100/PrizzLife/main/Source/release_v0.8.1.lua"))()
             Fluent:Notify({ Title = "Games", Content = "Loaded: Prison Life", Duration = 3 })
@@ -809,6 +819,7 @@ function loadHub()
     Tabs.Games:AddButton({
         Title = "Work At Ronald's Restaurant (TOO OP)",
         Description = "Overpowered script for Work At Ronald's Restaurant.",
+        Flag = "GamesRonald",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/idkevenknowburh/Ronaldo.exe/refs/heads/main/ronalds"))()
             Fluent:Notify({ Title = "Games", Content = "Loaded: Ronald's Restaurant", Duration = 3 })
@@ -823,6 +834,7 @@ function loadHub()
     Tabs.Scripts:AddButton({
         Title = "Sword Reach + Universal Controls",
         Description = "Hitbox expander with increase/decrease/reset. Equip a tool first.",
+        Flag = "ScriptsSwordReach",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wizard"))()
             Fluent:Notify({ Title = "Scripts", Content = "Loaded: Sword Reach GUI", Duration = 3 })
@@ -834,6 +846,7 @@ function loadHub()
     Tabs.Scripts:AddButton({
         Title = "Infinite Yield",
         Description = "Universal admin commands. (Not owned by us)",
+        Flag = "ScriptsInfiniteYield",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source", true))()
             Fluent:Notify({ Title = "Scripts", Content = "Loaded: Infinite Yield", Duration = 3 })
@@ -843,6 +856,7 @@ function loadHub()
     Tabs.Scripts:AddButton({
         Title = "Dark Dex (Explorer)",
         Description = "Instance explorer and properties editor.",
+        Flag = "ScriptsDarkDex",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Babyhamsta/RBLX_Scripts/main/Universal/Browser.lua"))()
             Fluent:Notify({ Title = "Scripts", Content = "Loaded: Dark Dex", Duration = 3 })
@@ -852,6 +866,7 @@ function loadHub()
     Tabs.Scripts:AddButton({
         Title = "SimpleSpy (Remote Spy)",
         Description = "Spy on and fire RemoteEvents/RemoteFunctions.",
+        Flag = "ScriptsSimpleSpy",
         Callback = function()
             loadstring(game:HttpGet("https://github.com/exxtremestuffs/SimpleSpySource/raw/master/SimpleSpy.lua"))()
             Fluent:Notify({ Title = "Scripts", Content = "Loaded: SimpleSpy", Duration = 3 })
@@ -861,6 +876,7 @@ function loadHub()
     Tabs.Scripts:AddButton({
         Title = "CMD-X (Command Bar)",
         Description = "In-game command bar for quick Lua execution.",
+        Flag = "ScriptsCMDX",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source.lua"))()
             Fluent:Notify({ Title = "Scripts", Content = "Loaded: CMD-X", Duration = 3 })
@@ -870,16 +886,28 @@ function loadHub()
     -- ==========================================
     --  PLAYER TAB
     -- ==========================================
+
+    -- State tracking for respawn persistence
+    local stateWalkSpeed = 16
+    local stateJumpPower = 50
+    local stateInfiniteJump = false
+    local stateNoClip = false
+    local stateFly = false
+
+    local autoGiveConn = nil
+    local autoGiveItem = nil
+
     Tabs.Player:AddSection("Movement")
 
     Tabs.Player:AddSlider({
         Title = "WalkSpeed",
         Description = "Change your walk speed.",
-        Min = 0,
+        Min = 10,
         Max = 200,
         Default = 16,
-        Flag = "WalkSpeed",
+        Flag = "PlayerWalkSpeed",
         Callback = function(Value)
+            stateWalkSpeed = Value
             local char = player.Character
             if char and char:FindFirstChild("Humanoid") then
                 char.Humanoid.WalkSpeed = Value
@@ -893,8 +921,9 @@ function loadHub()
         Min = 0,
         Max = 300,
         Default = 50,
-        Flag = "JumpPower",
+        Flag = "PlayerJumpPower",
         Callback = function(Value)
+            stateJumpPower = Value
             local char = player.Character
             if char and char:FindFirstChild("Humanoid") then
                 char.Humanoid.JumpPower = Value
@@ -906,8 +935,9 @@ function loadHub()
         Title = "Infinite Jump",
         Description = "Jump endlessly mid-air.",
         Default = false,
-        Flag = "InfiniteJump",
+        Flag = "PlayerInfiniteJump",
         Callback = function(Value)
+            stateInfiniteJump = Value
             if Value then
                 infiniteJumpConn = UIS.JumpRequest:Connect(function()
                     local char = player.Character
@@ -930,8 +960,9 @@ function loadHub()
         Title = "NoClip",
         Description = "Walk through walls. Toggle off to re-enable collision.",
         Default = false,
-        Flag = "NoClip",
+        Flag = "PlayerNoClip",
         Callback = function(Value)
+            stateNoClip = Value
             if Value then
                 noclipConn = RunService.Stepped:Connect(function()
                     local char = player.Character
@@ -965,8 +996,9 @@ function loadHub()
         Title = "Fly",
         Description = "WASD + Space/Shift to fly. Toggle off to land.",
         Default = false,
-        Flag = "Fly",
+        Flag = "PlayerFly",
         Callback = function(Value)
+            stateFly = Value
             if Value then
                 local char = player.Character
                 if not char or not char:FindFirstChild("HumanoidRootPart") then
@@ -1020,17 +1052,108 @@ function loadHub()
         Min = 10,
         Max = 200,
         Default = 50,
-        Flag = "FlySpeed",
+        Flag = "PlayerFlySpeed",
         Callback = function(Value)
             flySpeed = Value
         end
     })
 
+    -- ==========================================
+    --  RESPAWN PERSISTENCE
+    -- ==========================================
+    player.CharacterAdded:Connect(function(char)
+        local humanoid = char:WaitForChild("Humanoid")
+        humanoid.WalkSpeed = stateWalkSpeed
+        humanoid.JumpPower = stateJumpPower
+
+        -- Auto Give Tool on Die
+        if autoGiveItem and player:GetAttribute("SavedToolName") then
+            local toolName = player:GetAttribute("SavedToolName")
+            task.wait(2)
+            for _, t in ipairs(player.Backpack:GetChildren()) do
+                if t:IsA("Tool") and t.Name == toolName then
+                    humanoid:EquipTool(t)
+                    break
+                end
+            end
+        end
+
+        task.wait(1)
+        if stateNoClip then
+            if noclipConn then noclipConn:Disconnect() end
+            noclipConn = RunService.Stepped:Connect(function()
+                if player.Character then
+                    for _, part in ipairs(player.Character:GetDescendants()) do
+                        if part:IsA("BasePart") then part.CanCollide = false end
+                    end
+                end
+            end)
+        end
+        if stateFly then
+            local hrp = char:WaitForChild("HumanoidRootPart")
+            bodyVelocity = Instance.new("BodyVelocity")
+            bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+            bodyVelocity.Parent = hrp
+            bodyGyro = Instance.new("BodyGyro")
+            bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+            bodyGyro.P = 9e4
+            bodyGyro.CFrame = hrp.CFrame
+            bodyGyro.Parent = hrp
+            humanoid.PlatformStand = true
+            if flyConn then flyConn:Disconnect() end
+            flyConn = RunService.RenderStepped:Connect(function()
+                local cam = workspace.CurrentCamera
+                if bodyGyro then bodyGyro.CFrame = cam.CFrame end
+                local dir = Vector3.new(0, 0, 0)
+                if UIS:IsKeyDown(Enum.KeyCode.W) then dir = dir + cam.CFrame.LookVector end
+                if UIS:IsKeyDown(Enum.KeyCode.S) then dir = dir - cam.CFrame.LookVector end
+                if UIS:IsKeyDown(Enum.KeyCode.A) then dir = dir - cam.CFrame.RightVector end
+                if UIS:IsKeyDown(Enum.KeyCode.D) then dir = dir + cam.CFrame.RightVector end
+                if UIS:IsKeyDown(Enum.KeyCode.Space) then dir = dir + Vector3.new(0, 1, 0) end
+                if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then dir = dir - Vector3.new(0, 1, 0) end
+                if bodyVelocity then bodyVelocity.Velocity = dir * flySpeed end
+            end)
+        end
+    end)
+
+    -- Track equipped tool for Auto Give Item
+    RunService.Heartbeat:Connect(function()
+        if autoGiveItem and player.Character and player.Character:FindFirstChild("Humanoid") then
+            local tool = player.Character.Humanoid:GetTool()
+            if tool then
+                player:SetAttribute("SavedToolName", tool.Name)
+            end
+        end
+    end)
+
     Tabs.Player:AddSection("Tools")
+
+    Tabs.Player:AddToggle({
+        Title = "Auto Give Tool on Die",
+        Description = "Automatically re-equips your held tool when you respawn.",
+        Default = false,
+        Flag = "PlayerAutoGiveItem",
+        Callback = function(Value)
+            if Value then
+                autoGiveItem = true
+                -- Save current tool
+                if player.Character and player.Character:FindFirstChild("Humanoid") then
+                    local tool = player.Character.Humanoid:GetTool()
+                    if tool then
+                        player:SetAttribute("SavedToolName", tool.Name)
+                    end
+                end
+            else
+                autoGiveItem = false
+            end
+        end
+    })
 
     Tabs.Player:AddButton({
         Title = "Fly GUI V3 (External)",
         Description = "Opens the standalone Fly GUI for advanced flight.",
+        Flag = "PlayerFlyGUI",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()
             Fluent:Notify({ Title = "Player", Content = "Loaded: Fly GUI V3", Duration = 3 })
@@ -1040,6 +1163,7 @@ function loadHub()
     Tabs.Player:AddButton({
         Title = "Reset Character",
         Description = "Kills your character to respawn (resets all states).",
+        Flag = "PlayerReset",
         Callback = function()
             -- Stop all features
             if infiniteJumpConn then infiniteJumpConn:Disconnect(); infiniteJumpConn = nil end
@@ -1062,6 +1186,7 @@ function loadHub()
     Tabs.Misc:AddButton({
         Title = "OP Autoclicker",
         Description = "Auto-clicker tool.",
+        Flag = "MiscAutoclicker",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Hosvile/The-telligence/main/MC%20KSystem%202"))()
             Fluent:Notify({ Title = "Misc", Content = "Loaded: Autoclicker", Duration = 3 })
@@ -1073,6 +1198,7 @@ function loadHub()
     Tabs.Misc:AddButton({
         Title = "(FE) Aimbot GUI",
         Description = "Aimbot that works in FE games. Lock-on & team check toggles.",
+        Flag = "MiscAimbot",
         Callback = function()
             local Players_ = game:GetService("Players")
             local UIS_ = game:GetService("UserInputService")
@@ -1156,12 +1282,14 @@ function loadHub()
     -- ==========================================
     Tabs.Settings:AddParagraph({
         Title = "Settings",
-        Content = "Click the ⚙️ gear icon at the top of the hub to change themes, toggle Acrylic blur, adjust transparency, and more.\n\nCurrent theme: AMOLED (pure dark black)\n\nAll settings are automatically saved by Fluent-Modded."
+        Content = "Click the ⚙️ gear icon at the top of the hub to change themes, toggle Acrylic blur, adjust transparency, and more.\n\nCurrent theme: AMOLED (pure dark black)\n\nAll settings are automatically saved by Fluent-Modded.",
+        Flag = "SettingsInfo"
     })
 
     Tabs.Settings:AddButton({
         Title = "Reset Configuration",
         Description = "Clears all saved Fluent-Modded settings.",
+        Flag = "SettingsReset",
         Callback = function()
             Fluent:SaveConfiguration(true)
             Fluent:Notify({ Title = "Settings", Content = "Configuration reset! Reloading...", Duration = 3 })
@@ -1179,13 +1307,15 @@ function loadHub()
     -- Section 1: Sheitsa Team
     Tabs.Credits:AddParagraph({
         Title = "Sheitsa Team",
-        Content = "@Sheitsa  [OWNER] [HEAD DEV]\n@boxyy._  [SCRIPT DEV]\n@nomorecoder  [SCRIPT DEV]"
+        Content = "@Sheitsa  [OWNER] [HEAD DEV]\n@boxyy._  [SCRIPT DEV]\n@nomorecoder  [SCRIPT DEV]",
+        Flag = "CreditsTeam"
     })
 
     -- Section 2: UI Library Credit
     Tabs.Credits:AddParagraph({
         Title = "UI Library",
-        Content = "Fluent-Modded by StyearX on YouTube\nhttps://github.com/StyearX/Fluent-Modded"
+        Content = "Fluent-Modded by StyearX on YouTube\nhttps://github.com/StyearX/Fluent-Modded",
+        Flag = "CreditsUI"
     })
 
     -- ==========================================
@@ -1198,7 +1328,7 @@ function loadHub()
     })
 
     -- ==========================================
-    --  HUB TOGGLE BUTTON (black & white, square)
+    --  HUB TOGGLE BUTTON (top center, draggable)
     -- ==========================================
     local toggleGui = Instance.new("ScreenGui")
     toggleGui.Name = "SheitsaHubToggle"
@@ -1219,7 +1349,7 @@ function loadHub()
 
     local hubToggle = Instance.new("TextButton")
     hubToggle.Size = UDim2.new(0, 44, 0, 44)
-    hubToggle.Position = UDim2.new(0, 18, 1, -62)
+    hubToggle.Position = UDim2.new(0.5, -22, 0, 14)
     hubToggle.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
     hubToggle.Text = ""
     hubToggle.BorderSizePixel = 0
@@ -1240,15 +1370,40 @@ function loadHub()
     tIcon.TextColor3 = Color3.fromRGB(200, 200, 210)
     tIcon.Font = Enum.Font.GothamBold
 
-    hubToggle.MouseButton1Click:Connect(function()
-        hubVisible = not hubVisible
-        local fGui = getFluentGui()
-        if fGui then fGui.Enabled = hubVisible end
-        tIcon.Text = hubVisible and "S2" or "—"
-        tStroke.Color = hubVisible and Color3.fromRGB(190, 190, 200) or Color3.fromRGB(80, 80, 90)
-        hubToggle.BackgroundColor3 = hubVisible and Color3.fromRGB(12, 12, 16) or Color3.fromRGB(30, 30, 36)
+    -- Drag + Click for hub toggle (with 5px drag threshold)
+    local htDrag, htDragStart, htStartPos, htDidDrag
+    hubToggle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            htDrag = true; htDidDrag = false
+            htDragStart = input.Position; htStartPos = hubToggle.Position
+        end
+    end)
+    hubToggle.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if not htDidDrag then
+                hubVisible = not hubVisible
+                local fGui = getFluentGui()
+                if fGui then fGui.Enabled = hubVisible end
+                tIcon.Text = hubVisible and "S2" or "—"
+                tStroke.Color = hubVisible and Color3.fromRGB(190, 190, 200) or Color3.fromRGB(80, 80, 90)
+                hubToggle.BackgroundColor3 = hubVisible and Color3.fromRGB(12, 12, 16) or Color3.fromRGB(30, 30, 36)
+            end
+            htDrag = false
+        end
+    end)
+    UIS.InputChanged:Connect(function(input)
+        if htDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local d = input.Position - htDragStart
+            if math.abs(d.X) > 5 or math.abs(d.Y) > 5 then htDidDrag = true end
+            hubToggle.Position = UDim2.new(htStartPos.X.Scale, htStartPos.X.Offset + d.X, htStartPos.Y.Scale, htStartPos.Y.Offset + d.Y)
+        end
     end)
 end
 
--- ========== STARTUP (key system ALWAYS shows first) ==========
-showKeySystem()
+-- ========== STARTUP ==========
+local saved = getSavedKey()
+if saved and isValidKey(saved) then
+    loadHub()
+else
+    showKeySystem()
+end

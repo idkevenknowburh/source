@@ -934,7 +934,7 @@ function loadHub()
 
     Tabs.Player:AddSection("Movement")
 
-    Tabs.Player:AddSlider({
+    Tabs.Player:AddSlider("PlayerWalkSpeed", {
         Title = "WalkSpeed",
         Description = "Change your walk speed.",
         Min = 10,
@@ -950,7 +950,7 @@ function loadHub()
         end
     })
 
-    Tabs.Player:AddSlider({
+    Tabs.Player:AddSlider("PlayerJumpPower", {
         Title = "JumpPower",
         Description = "Change your jump power.",
         Min = 0,
@@ -966,7 +966,7 @@ function loadHub()
         end
     })
 
-    Tabs.Player:AddToggle({
+    Tabs.Player:AddToggle("PlayerInfiniteJump", {
         Title = "Infinite Jump",
         Description = "Jump endlessly mid-air.",
         Default = false,
@@ -991,7 +991,7 @@ function loadHub()
 
     Tabs.Player:AddSection("Physics")
 
-    Tabs.Player:AddToggle({
+    Tabs.Player:AddToggle("PlayerNoClip", {
         Title = "NoClip",
         Description = "Walk through walls. Toggle off to re-enable collision.",
         Default = false,
@@ -1027,7 +1027,7 @@ function loadHub()
         end
     })
 
-    Tabs.Player:AddToggle({
+    Tabs.Player:AddToggle("PlayerFly", {
         Title = "Fly",
         Description = "WASD + Space/Shift to fly. Toggle off to land.",
         Default = false,
@@ -1081,7 +1081,7 @@ function loadHub()
         end
     })
 
-    Tabs.Player:AddSlider({
+    Tabs.Player:AddSlider("PlayerFlySpeed", {
         Title = "Fly Speed",
         Description = "Adjust fly speed when Fly is active.",
         Min = 10,
@@ -1164,7 +1164,7 @@ function loadHub()
 
     Tabs.Player:AddSection("Tools")
 
-    Tabs.Player:AddToggle({
+    Tabs.Player:AddToggle("PlayerAutoGiveItem", {
         Title = "Auto Give Tool on Die",
         Description = "Automatically re-equips your held tool when you respawn.",
         Default = false,

@@ -14,10 +14,18 @@ local player = Players.LocalPlayer
 
 -- ========== CONFIG ==========
 local Keys = {"ad35v"}
-local KeyVersion = 2
 local DiscordLink = "https://discord.gg/ZE6vyxgydK"
 local KeyFileName = "SheitsaHubV2_Key.txt"
 local KeyVerFileName = "SheitsaHubV2_KeyVer.txt"
+
+-- Auto-compute key fingerprint so ANY change to Keys invalidates saved keys
+local function computeKeyFingerprint()
+    local str = table.concat(Keys, "|")
+    local h = 0
+    for i = 1, #str do h = (h * 31 + string.byte(str, i)) % 2147483647 end
+    return tostring(h)
+end
+local KeyFingerprint = computeKeyFingerprint()
 
 -- Player feature connections
 local infiniteJumpConn = nil
@@ -38,9 +46,9 @@ end
 local function getSavedKey()
     local ok, key = pcall(readfile, KeyFileName)
     if not ok then return nil end
-    -- Check if key version matches — if you changed keys, force re-auth
-    local ok2, ver = pcall(readfile, KeyVerFileName)
-    if not ok2 or tonumber(ver) ~= KeyVersion then
+    -- Check if key fingerprint matches — if you changed ANY key, force re-auth
+    local ok2, fp = pcall(readfile, KeyVerFileName)
+    if not ok2 or fp ~= KeyFingerprint then
         pcall(delfile, KeyFileName)
         pcall(delfile, KeyVerFileName)
         return nil
@@ -50,7 +58,7 @@ end
 
 local function saveKey(key)
     pcall(writefile, KeyFileName, key)
-    pcall(writefile, KeyVerFileName, tostring(KeyVersion))
+    pcall(writefile, KeyVerFileName, KeyFingerprint)
 end
 
 -- ========== AMOLED THEME COLORS ==========
@@ -712,7 +720,7 @@ function loadHub()
     local Tabs = {
         Main     = Window:AddTab({ Title = "Main",     Icon = "home" }),
         Games    = Window:AddTab({ Title = "Games",    Icon = "gamepad-2" }),
-        Scripts  = Window:AddTab({ Title = "Scripts",  Icon = "code-square" }),
+        Scripts  = Window:AddTab({ Title = "Scripts",  Icon = "terminal" }),
         Player   = Window:AddTab({ Title = "Player",   Icon = "user" }),
         Misc     = Window:AddTab({ Title = "Misc",     Icon = "zap" }),
         Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
